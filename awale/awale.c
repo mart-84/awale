@@ -19,7 +19,7 @@ void init(partie *p)
     }
 }
 
-void printPartie(partie *p)
+void printBoard(partie *p)
 {
     printf("\n\n+----+-----------------------+----+\n");
     if (p->joueurCourant == 0)
@@ -141,7 +141,7 @@ int calculerScore(partie *p, int caseArrivee, int *plateau)
     return score;
 }
 
-int jouerCoup(partie *p, int coup)
+int jouer(partie *p, int coup)
 {
     int somme = calculerGrainesJoueur(p->plateau, p->joueurCourant);
     if (somme == 0)
@@ -225,6 +225,7 @@ void jouerCoupClavier(partie *p)
     int coup, status;
     do
     {
+        printBoard(p);
         do
         {
             printf("Choix de la case : ");
@@ -232,9 +233,8 @@ void jouerCoupClavier(partie *p)
             fflush(stdin);
             coup = interpreterCoup(p, choix);
         } while (coup == -1);
-        status = jouerCoup(p, coup);
+        status = jouer(p, coup);
     } while (status == EXIT_FAILURE);
-    printPartie(p);
     if (status == FIN_PARTIE)
     {
         printf("Quelqu'un a gagné, flemme de dire qui c'est \n");
@@ -247,21 +247,7 @@ int main()
 {
     partie p;
     init(&p);
-    p.plateau[0] = 0;
-    p.plateau[1] = 0;
-    p.plateau[2] = 0;
-    p.plateau[3] = 0;
-    p.plateau[4] = 0;
-    p.plateau[5] = 0;
-    p.plateau[6] = 1;
-    p.plateau[7] = 0;
-    p.plateau[8] = 0;
-    p.plateau[9] = 0;
-    p.plateau[10] = 0;
-    p.plateau[11] = 0;
-    p.joueurCourant = 1;
 
-    printPartie(&p);
     while(1) {
         jouerCoupClavier(&p);
     }
