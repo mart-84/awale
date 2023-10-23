@@ -5,6 +5,7 @@
 
 #include "server.h"
 #include "client.h"
+#include "listeclient.h"
 
 static void init(void)
 {
@@ -35,6 +36,7 @@ static void app(void)
    int max = sock;
    /* an array for all clients */
    Client clients[MAX_CLIENTS];
+   elementListeClient* listeClients = NULL;
 
    fd_set rdfs;
 
@@ -114,6 +116,7 @@ static void app(void)
          strncpy(c.name, buffer, BUF_SIZE - 1);
          c.isConnected = 1;
          clients[actual] = c;
+         listeClients = ajouterClient(listeClients, &c);
          actual++;
          printf("New client connected as %s\n", buffer);
       }
@@ -122,6 +125,7 @@ static void app(void)
          int i = 0;
          for (i = 0; i < actual; i++)
          {
+            break;
             /* a client is talking */
             if (FD_ISSET(clients[i].sock, &rdfs))
             {
@@ -176,6 +180,75 @@ static void app(void)
                }
                break;
             }
+         }
+
+         elementListeClient* ptr = listeClients;
+         while(ptr != NULL) {
+            if (ptr->client->isConnected == 0) {
+               ptr = ptr->suivant;
+               continue;
+            }
+            Client* client = ptr->client;
+
+            ptr = ptr->suivant;
+            
+            /* a client is talking */
+            if (FD_ISSET(client->sock, &rdfs))
+            {
+               int c = read_client(client->sock, buffer);
+               /* client disconnected */
+               if (c == 0)
+               {
+                  closesocket(client->sock);
+                  remove_client(clients, i, &actual);
+                  strncpy(buffer, client->name, BUF_SIZE - 1);
+                  strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
+                  send_message_to_all_clients(clients, *client, actual, buffer, 1);
+               }
+               else if (buffer[0] == '/')
+               {
+                  char* commande = strtok(buffer, " \n");
+                  if (strcmp(commande, "/help") == 0) {
+                     printf("client %d (%s) : /help\n", i, client->name);
+                     write_client(client->sock, "Liste des commandes disponibles :\n");
+                     write_client(client->sock, " - /help : affiche ce message d'aide\n");
+                     write_client(client->sock, " - /listejoueurs : affiche les autres joueurs connectes\n");
+      
+                  } else if (strcmp(commande, "/listejoueurs") == 0) {
+                     printf("client %d (%s) : /listejoueurs\n", i, client->name);
+                     if (actual == 1) {
+                        write_client(client->sock, "Aucun autre joueur n'est connecte\n");
+                     } else {
+                        write_client(client->sock, "Liste des joueurs connectes : \n");
+
+                        elementListeClient* ptr2 = listeClients;
+                        while (ptr2 != NULL) {
+                           if (ptr2->client->isConnected && ptr2 != ptr) {
+                              write_client(client->sock, " - ");
+                              write_client(client->sock, ptr2->client->name);
+                              write_client(client->sock, "\n");
+                           }
+
+                           ptr2 = ptr2->suivant;
+                        }
+                     }
+                  } else if (strcmp(commande, "/duel") == 0) {
+                     printf("client %d (%s) : /duel\n", i, client->name);
+                     char* adversaire = strtok(NULL, " \n");
+
+                     //TODO recherche de l'adversaire puis recuperation de sa socket puis transmission du défi et gestion de la reponse
+
+                     write_client(client->sock, "Bon bah si ");
+                     write_client(client->sock, adversaire);
+                     write_client(client->sock, " est connecte tu peux lui insulter sa mere\n");
+                  }
+               }
+               else
+               {
+                  send_message_to_all_clients(clients, *client, actual, buffer, 0);
+               }
+               break;
+            }      
          }
       }
    }
