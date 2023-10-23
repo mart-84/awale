@@ -1,0 +1,49 @@
+J1 :
++----+-----------------------+----+
+| J2 | 4 | 4 | 4 | 4 | 4 | 5 |  0 |
+|    |-----------------------|    |
+|  0 | 4 | 4 | 0 | 5 | 5 | 5 | J1 |
++----+-----------------------+----+
+       A   B   C   D   E   F
+
+
+J2 :
++----+-----------------------+----+
+| J1 | 5 | 5 | 5 | 0 | 4 | 4 |  0 |
+|    |-----------------------|    |
+|  0 | 5 | 4 | 4 | 4 | 4 | 4 | J2 |
++----+-----------------------+----+
+       A   B   C   D   E   F
+
+
+J2 qui joue:
++----+-----------------------+----+
+| J1 | 5 | 4 | 3 | 2 | 1 | 0 |  0 |
+|    |-----------------------|    |
+|  0 | 6 | 7 | 8 | 9 | 10| 11| J2 |
++----+-----------------------+----+
+       A   B   C   D   E   F
+
+J2 qui joue :
+A -> 6
+B -> 7
+C -> 8
+D -> 9
+E -> 10
+F -> 11
+
+on écrit : 
+- le cas où on joue un coup qui provoque la famine : jouer le coup mais pas ramasser/compter le score
+- le cas où l'adversaire est en famine : obligation de nourrir si possible -> vérifier qu'un coup de défamination est possible, sinon explosion nucléaire
+V si le joueur est en famine, fin de partie, l'adversaire ramasse ses graines
+
+deroulement d'un coup :
+- 
+- saisie du choix
+- vérification du choix
+
+
+condition de sortie : 
+- score >= 25
+- famine chez l'adversaire
+- pas de capture possible
