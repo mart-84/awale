@@ -160,7 +160,7 @@ static void app(void)
                      }
                   } else if (strcmp(commande, "/duel") == 0) {
                      printf("client %d (%s) : /duel\n", i, clients[i].name);
-                     
+                  }
                }
                else
                {
