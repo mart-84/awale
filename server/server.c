@@ -71,7 +71,7 @@ static void app(void)
       {
          /* new client */
          SOCKADDR_IN csin = {0};
-         size_t sinsize = sizeof csin;
+         socklen_t sinsize = sizeof csin;
          int csock = accept(sock, (SOCKADDR *)&csin, &sinsize);
          if (csock == SOCKET_ERROR)
          {
@@ -137,7 +137,7 @@ static void app(void)
                }
                else if (buffer[0] == '/')
                {
-                  char* commande = strtok(buffer, " ");
+                  char* commande = strtok(buffer, " \n");
                   if (strcmp(commande, "/help") == 0) {
                      printf("client %d (%s) : /help\n", i, clients[i].name);
                      write_client(clients[i].sock, "Liste des commandes disponibles :\n");
@@ -160,6 +160,13 @@ static void app(void)
                      }
                   } else if (strcmp(commande, "/duel") == 0) {
                      printf("client %d (%s) : /duel\n", i, clients[i].name);
+                     char* adversaire = strtok(NULL, " \n");
+
+                     //TODO recherche de l'adversaire puis recuperation de sa socket puis transmission du défi et gestion de la reponse
+
+                     write_client(clients[i].sock, "Bon bah si ");
+                     write_client(clients[i].sock, adversaire);
+                     write_client(clients[i].sock, " est connecte tu peux lui insulter sa mere\n");
                   }
                }
                else
