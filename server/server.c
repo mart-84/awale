@@ -36,7 +36,7 @@ static void app(void)
    int max = sock;
    /* an array for all clients */
    Client clients[MAX_CLIENTS];
-   elementListeClient* listeClients = NULL;
+   elementListeClient *listeClients = NULL;
 
    fd_set rdfs;
 
@@ -141,32 +141,41 @@ static void app(void)
                }
                else if (buffer[0] == '/')
                {
-                  char* commande = strtok(buffer, " \n");
-                  if (strcmp(commande, "/help") == 0) {
+                  char *commande = strtok(buffer, " \n");
+                  if (strcmp(commande, "/help") == 0)
+                  {
                      printf("client %d (%s) : /help\n", i, clients[i].name);
                      write_client(clients[i].sock, "Liste des commandes disponibles :\n");
                      write_client(clients[i].sock, " - /help : affiche ce message d'aide\n");
                      write_client(clients[i].sock, " - /listejoueurs : affiche les autres joueurs connectes\n");
-      
-                  } else if (strcmp(commande, "/listejoueurs") == 0) {
+                  }
+                  else if (strcmp(commande, "/listejoueurs") == 0)
+                  {
                      printf("client %d (%s) : /listejoueurs\n", i, clients[i].name);
-                     if (actual == 1) {
+                     if (actual == 1)
+                     {
                         write_client(clients[i].sock, "Aucun autre joueur n'est connecte\n");
-                     } else {
+                     }
+                     else
+                     {
                         write_client(clients[i].sock, "Liste des joueurs connectes : \n");
-                        for (int j = 0; j < actual; j++) {
-                           if (j != i) {
+                        for (int j = 0; j < actual; j++)
+                        {
+                           if (j != i)
+                           {
                               write_client(clients[i].sock, " - ");
                               write_client(clients[i].sock, clients[j].name);
                               write_client(clients[i].sock, "\n");
                            }
                         }
                      }
-                  } else if (strcmp(commande, "/duel") == 0) {
+                  }
+                  else if (strcmp(commande, "/duel") == 0)
+                  {
                      printf("client %d (%s) : /duel\n", i, clients[i].name);
-                     char* adversaire = strtok(NULL, " \n");
+                     char *adversaire = strtok(NULL, " \n");
 
-                     //TODO recherche de l'adversaire puis recuperation de sa socket puis transmission du défi et gestion de la reponse
+                     // TODO recherche de l'adversaire puis recuperation de sa socket puis transmission du défi et gestion de la reponse
 
                      write_client(clients[i].sock, "Bon bah si ");
                      write_client(clients[i].sock, adversaire);
@@ -181,16 +190,18 @@ static void app(void)
             }
          }
 
-         elementListeClient* ptr = listeClients;
-         while(ptr != NULL) {
-            if (ptr->client->isConnected == 0) {
+         elementListeClient *ptr = listeClients;
+         while (ptr != NULL)
+         {
+            if (ptr->client->isConnected == 0)
+            {
                ptr = ptr->suivant;
                continue;
             }
-            Client* client = ptr->client;
+            Client *client = ptr->client;
 
             ptr = ptr->suivant;
-            
+
             /* a client is talking */
             if (FD_ISSET(client->sock, &rdfs))
             {
@@ -206,23 +217,30 @@ static void app(void)
                }
                else if (buffer[0] == '/')
                {
-                  char* commande = strtok(buffer, " \n");
-                  if (strcmp(commande, "/help") == 0) {
+                  char *commande = strtok(buffer, " \n");
+                  if (strcmp(commande, "/help") == 0)
+                  {
                      printf("client %d (%s) : /help\n", i, client->name);
                      write_client(client->sock, "Liste des commandes disponibles :\n");
                      write_client(client->sock, " - /help : affiche ce message d'aide\n");
                      write_client(client->sock, " - /listejoueurs : affiche les autres joueurs connectes\n");
-      
-                  } else if (strcmp(commande, "/listejoueurs") == 0) {
+                  }
+                  else if (strcmp(commande, "/listejoueurs") == 0)
+                  {
                      printf("client %d (%s) : /listejoueurs\n", i, client->name);
-                     if (actual == 1) {
+                     if (actual == 1)
+                     {
                         write_client(client->sock, "Aucun autre joueur n'est connecte\n");
-                     } else {
+                     }
+                     else
+                     {
                         write_client(client->sock, "Liste des joueurs connectes : \n");
 
-                        elementListeClient* ptr2 = listeClients;
-                        while (ptr2 != NULL) {
-                           if (ptr2->client->isConnected && ptr2 != ptr) {
+                        elementListeClient *ptr2 = listeClients;
+                        while (ptr2 != NULL)
+                        {
+                           if (ptr2->client->isConnected && ptr2 != ptr)
+                           {
                               write_client(client->sock, " - ");
                               write_client(client->sock, ptr2->client->name);
                               write_client(client->sock, "\n");
@@ -231,11 +249,13 @@ static void app(void)
                            ptr2 = ptr2->suivant;
                         }
                      }
-                  } else if (strcmp(commande, "/duel") == 0) {
+                  }
+                  else if (strcmp(commande, "/duel") == 0)
+                  {
                      printf("client %d (%s) : /duel\n", i, client->name);
-                     char* adversaire = strtok(NULL, " \n");
+                     char *adversaire = strtok(NULL, " \n");
 
-                     //TODO recherche de l'adversaire puis recuperation de sa socket puis transmission du défi et gestion de la reponse
+                     // TODO recherche de l'adversaire puis recuperation de sa socket puis transmission du défi et gestion de la reponse
 
                      write_client(client->sock, "Bon bah si ");
                      write_client(client->sock, adversaire);
@@ -247,7 +267,7 @@ static void app(void)
                   send_message_to_all_clients(clients, *client, actual, buffer, 0);
                }
                break;
-            }      
+            }
          }
       }
    }
@@ -310,7 +330,8 @@ static int init_connection(void)
    sin.sin_family = AF_INET;
 
    int reuse = 1;
-   if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1) {
+   if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1)
+   {
       perror("setsockopt");
    }
 
