@@ -86,9 +86,8 @@ static void app(void)
             continue;
          }
 
-         // TODO : vérifier que le nom n'est pas déjà pris
          int pseudoPris = 0;
-         for (int i = 0; i <= actual; i++)
+         for (int i = 0; i < actual; i++)
          {
             if (strcmp(clients[i].name, buffer) == 0)
             {
