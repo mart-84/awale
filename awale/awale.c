@@ -3,32 +3,20 @@
 #include <time.h>
 #include "awale.h"
 
-#define TAILLE_PLATEAU 12
 #define FIN_PARTIE -102
 
-typedef int plateau[TAILLE_PLATEAU];
-typedef int scores[2];
 
-typedef struct
-{
-    plateau plateau;
-    scores scores;
-    int joueurCourant; // 0 : joueur 1, 1 : joueur 2
-} partie;
-
-int initialisation(partie *p)
+void init(partie *p)
 {
     srand(time(NULL) + 2);
     p->joueurCourant = rand() % 2;
     p->scores[0] = 0;
     p->scores[1] = 0;
 
-    for (int i = 0; i < TAILLE_PLATEAU; i++)
+    for (int i = 0; i < NB_CASES; i++)
     {
         p->plateau[i] = 4;
     }
-
-    return EXIT_SUCCESS;
 }
 
 void printPartie(partie *p)
@@ -117,8 +105,8 @@ int calculerScore(partie *p, int caseArrivee, int *plateau)
     int score = 0;
     int limite = p->joueurCourant == 0 ? 6 : 0;
 
-    int plateauTmp[TAILLE_PLATEAU];
-    for (int i = 0; i < TAILLE_PLATEAU; i++) {
+    int plateauTmp[NB_CASES];
+    for (int i = 0; i < NB_CASES; i++) {
         plateauTmp[i] = plateau[i];
     }
     
@@ -146,7 +134,7 @@ int calculerScore(partie *p, int caseArrivee, int *plateau)
         return 0; // famine, on ne ramasse pas les graines
     }
 
-    for (int i = 0; i < TAILLE_PLATEAU; i++) {
+    for (int i = 0; i < NB_CASES; i++) {
         plateau[i] = plateauTmp[i];
     }
     
@@ -191,8 +179,8 @@ int jouerCoup(partie *p, int coup)
         return EXIT_FAILURE;
     }
 
-    int plateau[TAILLE_PLATEAU];
-    for (int i = 0; i < TAILLE_PLATEAU; i++) {
+    int plateau[NB_CASES];
+    for (int i = 0; i < NB_CASES; i++) {
         plateau[i] = p->plateau[i];
     }
 
@@ -200,9 +188,9 @@ int jouerCoup(partie *p, int coup)
     int caseArrivee = -1;
     for (int i = 1; i <= nombreGraines; i++)
     {
-        if (i % TAILLE_PLATEAU != 0)
+        if (i % NB_CASES != 0)
         {
-            caseArrivee = (coup + i) % TAILLE_PLATEAU;
+            caseArrivee = (coup + i) % NB_CASES;
             plateau[caseArrivee]++;
         }
     }
@@ -212,7 +200,7 @@ int jouerCoup(partie *p, int coup)
     if (score != -1) //si le coup est légal
     {
         p->scores[p->joueurCourant] += score;
-        for (int i = 0; i < TAILLE_PLATEAU; i++)
+        for (int i = 0; i < NB_CASES; i++)
         {
             p->plateau[i] = plateau[i];
         }
@@ -258,7 +246,7 @@ void jouerCoupClavier(partie *p)
 int main()
 {
     partie p;
-    initialisation(&p);
+    init(&p);
     p.plateau[0] = 0;
     p.plateau[1] = 0;
     p.plateau[2] = 0;
