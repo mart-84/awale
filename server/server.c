@@ -112,6 +112,7 @@ static void app(void)
 
          Client c = {csock};
          strncpy(c.name, buffer, BUF_SIZE - 1);
+         c.isConnected = 1;
          clients[actual] = c;
          actual++;
          printf("New client connected as %s\n", buffer);
