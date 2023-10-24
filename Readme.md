@@ -2,6 +2,11 @@
 # Todos
 - Duel
 - Affichage et édition des biographies
+- Reconnexion :
+    - Proposer de reprendre la partie en cours (uniquement si l'autre joueur est toujours connecté)
+    - Si le joueur refuse de reprendre : il perd
+- A la déconnexion, si les deux joueurs d'une partie sont déconnectés : supprimer le match
+
 
 # Commandes
 Les commandes commencent par le préfixe /
