@@ -254,9 +254,44 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/accepte") == 0)
                   {
-                     // TODO : rechercher si un match est en attente avec le client et le nom du joueur
-                     // Si un match est trouvé, le passer en cours et envoyer un message aux deux joueurs puis commencer le match
-                     // Sinon, envoyer un message d'erreur et la liste des invitations en attente
+                     char *adversaire = strtok(NULL, " \n");
+                     Client *c = rechercherClientParNom(listeClients, adversaire);
+                     if (c == NULL) // client inexistant
+                     {
+                        write_client(client->sock, "Ce joueur n'existe pas\n");
+                        continue;
+                     }
+
+                     elementListeMatch *mNode = rechercherMatchClients(listeMatchs, client, c);
+                     if (mNode == NULL) /// aucun match en attente
+                     {
+                        write_client(client->sock, "Aucune invitation n'a été envoyée à ce joueur\n");
+                        continue;
+                     }
+
+                     if (mNode->match->etat != ATTENTE) // match déjà en cours
+                     {
+                        write_client(client->sock, "Aucune invitation n'est en attente avec ce joueur\n");
+                        continue;
+                     }
+
+                     mNode->match->etat = EN_COURS;
+
+                     // Envoie du message au joueur qui lance le duel
+                     buffer[0] = 0;
+                     strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " a accepté votre invitation !\n", BUF_SIZE - strlen(buffer) - 1);
+                     write_client(c->sock, buffer);
+
+                     // Envoie du message au joueur qui reçoit le duel
+                     buffer[0] = 0;
+                     strncat(buffer, "Vous avez accepté l'invitation de ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, c->name, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
+                     write_client(client->sock, buffer);
+
+                     // TODO : commencer le match
                   }
                   else
                   {
