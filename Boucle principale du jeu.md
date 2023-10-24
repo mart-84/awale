@@ -6,7 +6,7 @@
     - plus aucune capture possible (assez compliqué)
     => mettre fin au jeu et afficher le résultat
 - jouer un coup
-- calculer le nouveau score
+    - calculer le nouveau score
 
 # Boucle principale du jeu sur le serveur :
 - envoyer le plateau aux deux joueurs
@@ -15,4 +15,4 @@
 - attendre que le joueur courant envoie son coup
 - jouer le coup
     - si coup invalide, envoyer l'erreur au joueur courant et attendre de nouveau
-- calculer le nouveau score
+    - calculer le nouveau score

@@ -1,14 +1,13 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#define BUF_SIZE    1024
-typedef int SOCKET;
+#include "includes.h"
 
 typedef struct
 {
    SOCKET sock;
    char name[BUF_SIZE];
-   int isConnected;
+   int isConnected; // connecté 1 | déconnecté 0
 } Client;
 
 #endif /* guard */
