@@ -1,4 +1,4 @@
-#include "listeclient.h"
+#include "listeClient.h"
 
 elementListeClient *ajouterClient(elementListeClient *element, Client *client)
 {
@@ -26,9 +26,7 @@ Client *rechercherClientParNom(elementListeClient *liste, char *nom)
         {
             return liste->client;
         }
-
         liste = liste->suivant;
     }
-
     return NULL;
 }

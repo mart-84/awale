@@ -5,7 +5,7 @@
 
 #include "server.h"
 #include "client.h"
-#include "listeclient.h"
+#include "listeClient.h"
 
 static void init(void)
 {
@@ -34,15 +34,12 @@ static void app(void)
    /* the index for the array */
    int actual = 0;
    int max = sock;
-   /* an array for all clients */
-   Client clients[MAX_CLIENTS];
    elementListeClient *listeClients = NULL;
 
    fd_set rdfs;
 
    while (1)
    {
-      int i = 0;
       FD_ZERO(&rdfs);
 
       /* add STDIN_FILENO */
@@ -52,9 +49,15 @@ static void app(void)
       FD_SET(sock, &rdfs);
 
       /* add socket of each client */
-      for (i = 0; i < actual; i++)
+      elementListeClient *ptr = listeClients;
+      while (ptr != NULL)
       {
-         FD_SET(clients[i].sock, &rdfs);
+         if (ptr->client->isConnected)
+         {
+            FD_SET(ptr->client->sock, &rdfs);
+         }
+
+         ptr = ptr->suivant;
       }
 
       if (select(max + 1, &rdfs, NULL, NULL, NULL) == -1)
@@ -74,122 +77,54 @@ static void app(void)
          /* new client */
          SOCKADDR_IN csin = {0};
          socklen_t sinsize = sizeof csin;
-         int csock = accept(sock, (SOCKADDR *)&csin, &sinsize);
-         if (csock == SOCKET_ERROR)
+         SOCKET clientSock = accept(sock, (SOCKADDR *)&csin, &sinsize);
+         if (clientSock == SOCKET_ERROR)
          {
             perror("accept()");
             continue;
          }
 
          /* after connecting the client sends its name */
-         if (read_client(csock, buffer) == -1)
+         if (read_client(clientSock, buffer) == -1)
          {
             /* disconnected */
             continue;
          }
 
-         int pseudoPris = 0;
-         for (int i = 0; i < actual; i++)
+         Client *c = rechercherClientParNom(listeClients, buffer);
+         if (c != NULL)
          {
-            if (strcmp(clients[i].name, buffer) == 0)
+            if (c->isConnected)
             {
-               printf("Client name %s already taken\n", buffer);
-               pseudoPris = 1;
-               break;
+               printf("Client %s already connected\n", buffer);
+               write_client(clientSock, "Ce pseudo est déjà utilisé.\n");
+               end_connection(clientSock);
             }
-         }
-
-         if (pseudoPris)
-         {
-            write_client(csock, "Ce pseudo est déjà utilisé.\n");
-            end_connection(csock);
+            else
+            {
+               printf("Client %s reconnected\n", buffer);
+               c->isConnected = 1;
+               c->sock = clientSock;
+               clientSock = c->sock;
+            }
             continue;
          }
 
          /* what is the new maximum fd ? */
-         max = csock > max ? csock : max;
+         max = clientSock > max ? clientSock : max;
 
-         FD_SET(csock, &rdfs);
+         FD_SET(clientSock, &rdfs);
 
-         Client c = {csock};
-         strncpy(c.name, buffer, BUF_SIZE - 1);
-         c.isConnected = 1;
-         clients[actual] = c;
-         listeClients = ajouterClient(listeClients, &c);
+         c = malloc(sizeof(Client));
+         c->sock = clientSock;
+         strncpy(c->name, buffer, BUF_SIZE - 1);
+         c->isConnected = 1;
+         listeClients = ajouterClient(listeClients, c);
          actual++;
          printf("New client connected as %s\n", buffer);
       }
       else
       {
-         int i = 0;
-         for (i = 0; i < actual; i++)
-         {
-            break;
-            /* a client is talking */
-            if (FD_ISSET(clients[i].sock, &rdfs))
-            {
-               Client client = clients[i];
-               int c = read_client(clients[i].sock, buffer);
-               /* client disconnected */
-               if (c == 0)
-               {
-                  closesocket(clients[i].sock);
-                  remove_client(clients, i, &actual);
-                  strncpy(buffer, client.name, BUF_SIZE - 1);
-                  strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
-                  send_message_to_all_clients(clients, client, actual, buffer, 1);
-               }
-               else if (buffer[0] == '/')
-               {
-                  char *commande = strtok(buffer, " \n");
-                  if (strcmp(commande, "/help") == 0)
-                  {
-                     printf("client %d (%s) : /help\n", i, clients[i].name);
-                     write_client(clients[i].sock, "Liste des commandes disponibles :\n");
-                     write_client(clients[i].sock, " - /help : affiche ce message d'aide\n");
-                     write_client(clients[i].sock, " - /listejoueurs : affiche les autres joueurs connectes\n");
-                  }
-                  else if (strcmp(commande, "/listejoueurs") == 0)
-                  {
-                     printf("client %d (%s) : /listejoueurs\n", i, clients[i].name);
-                     if (actual == 1)
-                     {
-                        write_client(clients[i].sock, "Aucun autre joueur n'est connecte\n");
-                     }
-                     else
-                     {
-                        write_client(clients[i].sock, "Liste des joueurs connectes : \n");
-                        for (int j = 0; j < actual; j++)
-                        {
-                           if (j != i)
-                           {
-                              write_client(clients[i].sock, " - ");
-                              write_client(clients[i].sock, clients[j].name);
-                              write_client(clients[i].sock, "\n");
-                           }
-                        }
-                     }
-                  }
-                  else if (strcmp(commande, "/duel") == 0)
-                  {
-                     printf("client %d (%s) : /duel\n", i, clients[i].name);
-                     char *adversaire = strtok(NULL, " \n");
-
-                     // TODO recherche de l'adversaire puis recuperation de sa socket puis transmission du défi et gestion de la reponse
-
-                     write_client(clients[i].sock, "Bon bah si ");
-                     write_client(clients[i].sock, adversaire);
-                     write_client(clients[i].sock, " est connecte tu peux lui insulter sa mere\n");
-                  }
-               }
-               else
-               {
-                  send_message_to_all_clients(clients, client, actual, buffer, 0);
-               }
-               break;
-            }
-         }
-
          elementListeClient *ptr = listeClients;
          while (ptr != NULL)
          {
@@ -210,24 +145,22 @@ static void app(void)
                if (c == 0)
                {
                   closesocket(client->sock);
-                  remove_client(clients, i, &actual);
+                  remove_client(listeClients, *client);
                   strncpy(buffer, client->name, BUF_SIZE - 1);
                   strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
-                  send_message_to_all_clients(clients, *client, actual, buffer, 1);
+                  send_message_to_all_clients(listeClients, *client, actual, buffer, 1);
+                  printf("Client %s disconnected\n", client->name);
                }
                else if (buffer[0] == '/')
                {
                   char *commande = strtok(buffer, " \n");
+                  printf("client %s : %s\n", client->name, commande);
                   if (strcmp(commande, "/help") == 0)
                   {
-                     printf("client %d (%s) : /help\n", i, client->name);
-                     write_client(client->sock, "Liste des commandes disponibles :\n");
-                     write_client(client->sock, " - /help : affiche ce message d'aide\n");
-                     write_client(client->sock, " - /listejoueurs : affiche les autres joueurs connectes\n");
+                     write_client(client->sock, "Liste des commandes disponibles :\n - /help : affiche ce message d'aide\n - /listejoueurs : affiche les autres joueurs connectes\n - /duel <pseudo> : défier le joueur <pseudo> dans un duel\n");
                   }
                   else if (strcmp(commande, "/listejoueurs") == 0)
                   {
-                     printf("client %d (%s) : /listejoueurs\n", i, client->name);
                      if (actual == 1)
                      {
                         write_client(client->sock, "Aucun autre joueur n'est connecte\n");
@@ -239,7 +172,7 @@ static void app(void)
                         elementListeClient *ptr2 = listeClients;
                         while (ptr2 != NULL)
                         {
-                           if (ptr2->client->isConnected && ptr2 != ptr)
+                           if (ptr2->client->isConnected && ptr2->client != client)
                            {
                               write_client(client->sock, " - ");
                               write_client(client->sock, ptr2->client->name);
@@ -252,65 +185,82 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/duel") == 0)
                   {
-                     printf("client %d (%s) : /duel\n", i, client->name);
                      char *adversaire = strtok(NULL, " \n");
-
                      // TODO recherche de l'adversaire puis recuperation de sa socket puis transmission du défi et gestion de la reponse
-
-                     write_client(client->sock, "Bon bah si ");
-                     write_client(client->sock, adversaire);
-                     write_client(client->sock, " est connecte tu peux lui insulter sa mere\n");
+                     Client *c = rechercherClientParNom(listeClients, adversaire);
+                     if (c == NULL)
+                     {
+                        write_client(client->sock, "Ce joueur n'existe pas\n");
+                     }
+                     else if (c->isConnected == 0)
+                     {
+                        write_client(client->sock, "Ce joueur n'est pas connecte\n");
+                     }
+                  }
+                  else
+                  {
+                     write_client(client->sock, "Commande inconnue\n");
                   }
                }
                else
                {
-                  send_message_to_all_clients(clients, *client, actual, buffer, 0);
+                  send_message_to_all_clients(listeClients, *client, actual, buffer, 0);
                }
-               break;
             }
          }
       }
    }
 
-   clear_clients(clients, actual);
+   clear_clients(listeClients, actual);
    end_connection(sock);
 }
 
-static void clear_clients(Client *clients, int actual)
+static void clear_clients(elementListeClient *clients, int actual)
 {
-   int i = 0;
-   for (i = 0; i < actual; i++)
+   elementListeClient *ptr = clients;
+   while (ptr != NULL)
    {
-      closesocket(clients[i].sock);
+      closesocket(ptr->client->sock);
+      ptr = ptr->suivant;
    }
 }
 
-static void remove_client(Client *clients, int to_remove, int *actual)
+static void remove_client(elementListeClient *clients, Client client)
 {
-   /* we remove the client in the array */
-   memmove(clients + to_remove, clients + to_remove + 1, (*actual - to_remove - 1) * sizeof(Client));
-   /* number client - 1 */
-   (*actual)--;
+   /* we remove the client in the list */
+   elementListeClient *ptr = clients;
+   while (ptr != NULL)
+   {
+      if (ptr->client->sock == client.sock)
+      {
+         printf("Client %s removed\n", ptr->client->name);
+         ptr->client->isConnected = 0;
+         ptr->client->sock = -1;
+         break;
+      }
+      ptr = ptr->suivant;
+   }
 }
 
-static void send_message_to_all_clients(Client *clients, Client sender, int actual, const char *buffer, char from_server)
+static void send_message_to_all_clients(elementListeClient *clients, Client sender, int actual, const char *buffer, char from_server)
 {
-   int i = 0;
    char message[BUF_SIZE];
    message[0] = 0;
-   for (i = 0; i < actual; i++)
+   elementListeClient *ptr = clients;
+   if (from_server == 0)
+   {
+      strncpy(message, sender.name, BUF_SIZE - 1);
+      strncat(message, " : ", sizeof message - strlen(message) - 1);
+   }
+   strncat(message, buffer, sizeof message - strlen(message) - 1);
+   while (ptr != NULL)
    {
       /* we don't send message to the sender */
-      if (sender.sock != clients[i].sock)
+      if (sender.sock != ptr->client->sock && ptr->client->isConnected == 1)
       {
-         if (from_server == 0)
-         {
-            strncpy(message, sender.name, BUF_SIZE - 1);
-            strncat(message, " : ", sizeof message - strlen(message) - 1);
-         }
-         strncat(message, buffer, sizeof message - strlen(message) - 1);
-         write_client(clients[i].sock, message);
+         write_client(ptr->client->sock, message);
       }
+      ptr = ptr->suivant;
    }
 }
 

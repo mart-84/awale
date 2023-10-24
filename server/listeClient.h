@@ -16,4 +16,4 @@ elementListeClient* ajouterClient(elementListeClient* element, Client* client);
 
 Client* rechercherClientParNom(elementListeClient* liste, char* nom);
 
-#endif // LISTE_CLIENT_H
+#endif /* guard */
