@@ -243,28 +243,28 @@ void jouerCoupClavier(partie *p)
 
 }
 
-int main()
-{
-    partie p;
-    init(&p);
+// int main()
+// {
+//     partie p;
+//     init(&p);
 
-    while(1) {
-        jouerCoupClavier(&p);
-    }
-    printf("C'est la faim, donc c'est la fin ;)\n\n");
-    // int coup = interpreterCoup(&p, 'd');
-    // jouerCoup(&p, coup);
-    // printPartie(&p);
-    // coup = interpreterCoup(&p, 'A');
-    // jouerCoup(&p, coup);
-    // printPartie(&p);
-    // coup = interpreterCoup(&p, 'C');
-    // jouerCoup(&p, coup);
-    // printPartie(&p);
-    // coup = interpreterCoup(&p, 'E');
-    // jouerCoup(&p, coup);
-    // printPartie(&p);
+//     while(1) {
+//         jouerCoupClavier(&p);
+//     }
+//     printf("C'est la faim, donc c'est la fin ;)\n\n");
+//     // int coup = interpreterCoup(&p, 'd');
+//     // jouerCoup(&p, coup);
+//     // printPartie(&p);
+//     // coup = interpreterCoup(&p, 'A');
+//     // jouerCoup(&p, coup);
+//     // printPartie(&p);
+//     // coup = interpreterCoup(&p, 'C');
+//     // jouerCoup(&p, coup);
+//     // printPartie(&p);
+//     // coup = interpreterCoup(&p, 'E');
+//     // jouerCoup(&p, coup);
+//     // printPartie(&p);
 
-    return EXIT_SUCCESS;
-}
+//     return EXIT_SUCCESS;
+// }
 
