@@ -11,14 +11,14 @@ CLIENT=$(BINDIR)/client
 SERVER=$(BINDIR)/server
 TARGET=$(CLIENT) $(SERVER)
 
-SRCS=client/client.c server/listeClient.c server/listeMatch.c server/server.c server/awale/awale.c
+SRCS=client/client.c server/listeClient.c server/listeMatch.c server/server.c server/awale/awale.c server/sauvegarde.c
 OBJS=$(SRCS:%.c=$(OBJDIR)/%.o)
 
 all: $(TARGET)
 	@echo Build complete
 
 $(CLIENT): $(OBJDIR)/client/client.o
-$(SERVER): $(OBJDIR)/server/server.o $(OBJDIR)/server/listeClient.o $(OBJDIR)/server/listeMatch.o $(OBJDIR)/server/awale/awale.o
+$(SERVER): $(OBJDIR)/server/server.o $(OBJDIR)/server/listeClient.o $(OBJDIR)/server/listeMatch.o $(OBJDIR)/server/awale/awale.o $(OBJDIR)/server/sauvegarde.o
 
 $(BINDIR)/%:
 	@mkdir -p $(@D)
@@ -44,3 +44,4 @@ start:
 
 clean:
 	rm -rf $(OBJDIR) $(BINDIR) $(DEPDIR)
+	
