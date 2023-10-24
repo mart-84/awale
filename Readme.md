@@ -1,7 +1,6 @@
 
 # Todos
 - Duel
-- Modification du nom des commandes en accord avec la liste ci-jointe
 - Affichage et édition des biographies
 
 # Commandes

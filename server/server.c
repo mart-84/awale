@@ -31,6 +31,7 @@ static void end(void)
 
 static void app(void)
 {
+   printf("Démarrage du serveur sur le port %d...\n", PORT);
    SOCKET sock = init_connection();
    char buffer[BUF_SIZE];
    /* the index for the array */
@@ -40,6 +41,8 @@ static void app(void)
    elementListeMatch *listeMatchs = NULL;
 
    fd_set rdfs;
+
+   printf("Waiting for connections...\n");
 
    while (1)
    {
@@ -125,6 +128,19 @@ static void app(void)
          listeClients = ajouterClient(listeClients, c);
          actual++;
          printf("New client connected as %s\n", buffer);
+         buffer[0] = 0;
+         strcat(buffer, "=============================\n");
+         strcat(buffer, "    ___                 __   \n");
+         strcat(buffer, "   /   |_      ______ _/ /__ \n");
+         strcat(buffer, "  / /| | | /| / / __ `/ / _ \\\n");
+         strcat(buffer, " / ___ | |/ |/ / /_/ / /  __/\n");
+         strcat(buffer, "/_/  |_|__/|__/\\__,_/_/\\___/ \n");
+         strcat(buffer, "=============================\n\n");
+         strcat(buffer, "Bienvenue ");
+         strcat(buffer, c->name);
+         strcat(buffer, " sur le serveur !\n");
+         strcat(buffer, "Tapez /help pour afficher la liste des commandes disponibles\n");
+         write_client(clientSock, buffer);
       }
       else
       {
@@ -157,7 +173,7 @@ static void app(void)
                else if (buffer[0] == '/')
                {
                   char *commande = strtok(buffer, " \n");
-                  printf("client %s : %s\n", client->name, commande);
+                  printf("client %s : %s\n", client->name, buffer);
                   if (strcmp(commande, "/help") == 0)
                   {
                      write_client(client->sock, "Liste des commandes disponibles :\n - /help : affiche ce message d'aide\n - /listejoueurs : affiche les autres joueurs connectes\n - /duel <pseudo> : défier le joueur <pseudo> dans un duel\n");
