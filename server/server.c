@@ -6,8 +6,10 @@
 #include "server.h"
 #include "client.h"
 #include "listeClient.h"
+#include "listeMatch.h"
+#include "match.h"
 
-static void init(void)
+static void init_server(void)
 {
 #ifdef WIN32
    WSADATA wsa;
@@ -35,6 +37,7 @@ static void app(void)
    int actual = 0;
    int max = sock;
    elementListeClient *listeClients = NULL;
+   elementListeMatch *listeMatchs = NULL;
 
    fd_set rdfs;
 
@@ -186,7 +189,6 @@ static void app(void)
                   else if (strcmp(commande, "/duel") == 0)
                   {
                      char *adversaire = strtok(NULL, " \n");
-                     // TODO recherche de l'adversaire puis recuperation de sa socket puis transmission du défi et gestion de la reponse
                      Client *c = rechercherClientParNom(listeClients, adversaire);
                      if (c == NULL)
                      {
@@ -196,6 +198,65 @@ static void app(void)
                      {
                         write_client(client->sock, "Ce joueur n'est pas connecte\n");
                      }
+                     else if (c == client)
+                     {
+                        write_client(client->sock, "Vous ne pouvez pas vous défier vous-même ;)\n");
+                     }
+                     else
+                     {
+                        // Si un match existe déjà entre les deux joueurs
+                        elementListeMatch *mNode = rechercherMatchClients(listeMatchs, client, c);
+                        if (mNode != NULL)
+                        {
+                           // Si l'invitation est en attente
+                           if (mNode->match->etat == ATTENTE)
+                           {
+                              write_client(client->sock, "Une invitation a déjà été envoyée à ce joueur. Il vient d'être relancé\n");
+
+                              buffer[0] = 0;
+                              strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
+                              strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
+                              strncat(buffer, " vous relance l'invitation pour son duel !\n", BUF_SIZE - strlen(buffer) - 1);
+                              write_client(c->sock, buffer);
+                           }
+                           else // Le match est en cours
+                           {
+                              write_client(client->sock, "Un match est déjà en cours avec ce joueur\n");
+                           }
+                           clearListeMatch(mNode);
+                           continue;
+                        }
+
+                        // Envoie du message au joueur qui lance le duel
+                        buffer[0] = 0;
+                        strncat(buffer, "Une invitation a été envoyé à ", BUF_SIZE - strlen(buffer) - 1);
+                        strncat(buffer, c->name, BUF_SIZE - strlen(buffer) - 1);
+                        strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
+                        write_client(client->sock, buffer);
+
+                        // Envoie du message au joueur qui reçoit le duel
+                        buffer[0] = 0;
+                        strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
+                        strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
+                        strncat(buffer, " vous défie dans un duel !\n", BUF_SIZE - strlen(buffer) - 1);
+                        write_client(c->sock, buffer);
+
+                        // Création du match et ajout à la liste des matchs
+                        partie *p = malloc(sizeof(partie));
+                        init(p);
+                        MatchAwale *m = malloc(sizeof(MatchAwale));
+                        m->joueur1 = client;
+                        m->joueur2 = c;
+                        m->partie = p;
+                        m->etat = ATTENTE;
+                        listeMatchs = ajouterMatch(listeMatchs, m);
+                     }
+                  }
+                  else if (strcmp(commande, "/accepte") == 0)
+                  {
+                     // TODO : rechercher si un match est en attente avec le client et le nom du joueur
+                     // Si un match est trouvé, le passer en cours et envoyer un message aux deux joueurs puis commencer le match
+                     // Sinon, envoyer un message d'erreur et la liste des invitations en attente
                   }
                   else
                   {
@@ -233,7 +294,6 @@ static void remove_client(elementListeClient *clients, Client client)
    {
       if (ptr->client->sock == client.sock)
       {
-         printf("Client %s removed\n", ptr->client->name);
          ptr->client->isConnected = 0;
          ptr->client->sock = -1;
          break;
@@ -332,7 +392,7 @@ static void write_client(SOCKET sock, const char *buffer)
 
 int main(int argc, char **argv)
 {
-   init();
+   init_server();
 
    app();
 

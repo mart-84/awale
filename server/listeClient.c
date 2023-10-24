@@ -1,32 +1,36 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "listeClient.h"
 
-elementListeClient *ajouterClient(elementListeClient *element, Client *client)
+elementListeClient *ajouterClient(elementListeClient *liste, Client *client)
 {
     elementListeClient *nouveauClient = (elementListeClient *)malloc(sizeof(elementListeClient));
     nouveauClient->client = client;
     nouveauClient->suivant = NULL;
 
-    if (element == NULL)
+    if (liste == NULL)
     {
         return nouveauClient;
     }
 
-    elementListeClient *liste = element;
-    while (element->suivant != NULL)
-        element = element->suivant;
-    element->suivant = nouveauClient;
+    elementListeClient *ptr = liste;
+    while (ptr->suivant != NULL)
+        ptr = ptr->suivant;
+    ptr->suivant = nouveauClient;
     return liste;
 }
 
 Client *rechercherClientParNom(elementListeClient *liste, char *nom)
 {
-    while (liste != NULL)
+    elementListeClient *ptr = liste;
+    while (ptr != NULL)
     {
-        if (strcmp(liste->client->name, nom) == 0)
+        if (strcmp(ptr->client->name, nom) == 0)
         {
-            return liste->client;
+            return ptr->client;
         }
-        liste = liste->suivant;
+        ptr = ptr->suivant;
     }
     return NULL;
 }

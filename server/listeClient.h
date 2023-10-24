@@ -1,9 +1,6 @@
 #ifndef LISTE_CLIENT_H
 #define LISTE_CLIENT_H
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "client.h"
 
 typedef struct elementListeClient
@@ -12,7 +9,7 @@ typedef struct elementListeClient
    Client* client;
 } elementListeClient;
 
-elementListeClient* ajouterClient(elementListeClient* element, Client* client);
+elementListeClient* ajouterClient(elementListeClient* liste, Client* client);
 
 Client* rechercherClientParNom(elementListeClient* liste, char* nom);
 
