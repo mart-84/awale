@@ -18,7 +18,7 @@ all: $(TARGET)
 	@echo Build complete
 
 $(CLIENT): $(OBJDIR)/client/client.o
-$(SERVER): $(OBJDIR)/server/server.o $(OBJDIR)/server/listeclient.o
+$(SERVER): $(OBJDIR)/server/server.o $(OBJDIR)/server/listeClient.o
 
 $(BINDIR)/%:
 	@mkdir -p $(@D)
