@@ -3,9 +3,13 @@
 
 #define NB_CASES 12
 #define NB_GRAINES 4
+#define NB_GRAINES_VICTOIRE 25
 
 #define JOUEUR1 0
 #define JOUEUR2 1
+
+#define PAS_DE_GAGNANT -1
+#define EGALITE 2
 
 typedef int plateau[NB_CASES];
 typedef int scores[2];
@@ -42,6 +46,7 @@ int jouer(partie *p, int caseJouee);
 /**
  * Détermine si une partie est terminée, et le gagnant le cas échéant
  * @param p : partie en cours
+ * @return JOUEUR1 ou JOUEUR2, si l'un d'eux a gagné, EGALITE le cas échéant et PAS_DE_GAGNANT sinon
 */
 int finDePartie(partie *p);
 
