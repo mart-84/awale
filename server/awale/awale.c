@@ -127,8 +127,7 @@ int calculerScore(partie *p, int caseArrivee, int *plateau)
     }
 
     // verification que toutes les cases de l'adversaire ne sont pas égales à 0
-    int somme = calculerGrainesJoueur(plateauTmp, (p->joueurCourant + 1) % 2);
-    if (somme == 0)
+    if (calculerGrainesJoueur(plateauTmp, (p->joueurCourant + 1) % 2) == 0)
     {
         printf("Impossible de ramasser, risque de famine !\n");
         return 0; // famine, on ne ramasse pas les graines
@@ -143,35 +142,6 @@ int calculerScore(partie *p, int caseArrivee, int *plateau)
 
 int jouer(partie *p, int coup)
 {
-    int somme = calculerGrainesJoueur(p->plateau, p->joueurCourant);
-    if (somme == 0)
-    {
-        printf("Toutes les cases du joueur courant sont vides !\n");
-        int scoreAdversaire = calculerGrainesJoueur(p->plateau, (p->joueurCourant + 1) % 2);
-        p->scores[(p->joueurCourant + 1) % 2] += scoreAdversaire;
-        printf("Fin de la partie\n");
-        return FIN_PARTIE;
-    }
-
-    if (calculerGrainesJoueur(p->plateau, (p->joueurCourant + 1) % 2) == 0) {
-        printf("Toutes les cases de l'adversaire sont vides !\n");
-        int offset = p->joueurCourant == 0 ? 0 : 6;
-
-        int i = offset;
-        int coupPossible = 0;
-        while (i < 6 + offset && coupPossible == 0) {
-            if (p->plateau[i] >= (6 - i + offset)) {
-                printf("Au moins un coup est possible ;) !\n");
-                coupPossible = 1;
-            }
-            i++;
-        }
-        if (coupPossible == 0) {
-            printf("Fin de la partie\n");
-            return FIN_PARTIE;
-        }
-    }
-
     int nombreGraines = p->plateau[coup];
     if (nombreGraines == 0)
     {
@@ -197,7 +167,7 @@ int jouer(partie *p, int coup)
 
     int score = calculerScore(p, caseArrivee, plateau);
 
-    if (score != -1) //si le coup est légal
+    if (score != -1) // si le coup est légal
     {
         p->scores[p->joueurCourant] += score;
         for (int i = 0; i < NB_CASES; i++)
@@ -223,6 +193,25 @@ void jouerCoupClavier(partie *p)
 {
     char choix;
     int coup, status;
+    
+    printBoard(p);
+    int gagnant = finDePartie(p);
+    if (gagnant != PAS_DE_GAGNANT) {
+        printf("Fin de partie : ");
+
+        if (gagnant == JOUEUR1) {
+            printf("victoire du joueur 1\n");
+        } else if (gagnant == JOUEUR2) {
+            printf("victoire du joueur 2\n");
+        } else if (gagnant == EGALITE) {
+            printf("égalité\n");
+        } else {
+            printf("????????????");
+        }
+
+        exit(EXIT_SUCCESS);
+    }
+
     do
     {
         printBoard(p);
@@ -235,36 +224,61 @@ void jouerCoupClavier(partie *p)
         } while (coup == -1);
         status = jouer(p, coup);
     } while (status == EXIT_FAILURE);
-    if (status == FIN_PARTIE)
-    {
-        printf("Quelqu'un a gagné, flemme de dire qui c'est \n");
-        exit(EXIT_SUCCESS);
-    }
-
 }
 
-// int main()
-// {
-//     partie p;
-//     init(&p);
+int finDePartie(partie *p) {
+    if (p->scores[0] >= NB_GRAINES_VICTOIRE) {
+        return JOUEUR1;
+    }
 
-//     while(1) {
-//         jouerCoupClavier(&p);
-//     }
-//     printf("C'est la faim, donc c'est la fin ;)\n\n");
-//     // int coup = interpreterCoup(&p, 'd');
-//     // jouerCoup(&p, coup);
-//     // printPartie(&p);
-//     // coup = interpreterCoup(&p, 'A');
-//     // jouerCoup(&p, coup);
-//     // printPartie(&p);
-//     // coup = interpreterCoup(&p, 'C');
-//     // jouerCoup(&p, coup);
-//     // printPartie(&p);
-//     // coup = interpreterCoup(&p, 'E');
-//     // jouerCoup(&p, coup);
-//     // printPartie(&p);
+    if (p->scores[1] >= NB_GRAINES_VICTOIRE) {
+        return JOUEUR2;
+    }
+    int nbGrainesJoueurCourant = calculerGrainesJoueur(p->plateau, p->joueurCourant);
+    int nbGrainesAdversaire = calculerGrainesJoueur(p->plateau, (p->joueurCourant + 1) % 2);
 
-//     return EXIT_SUCCESS;
-// }
+    if (nbGrainesJoueurCourant == 0)
+    {
+        printf("Toutes les cases du joueur courant sont vides !\n");
+        // l'adversaire ramasse ses graines
+        printf("Le joueur %d ramasse ses graines\n", (p->joueurCourant)+1);
+        p->scores[(p->joueurCourant + 1) % 2] += nbGrainesAdversaire;
+
+    } else if (nbGrainesAdversaire == 0) {
+        printf("Toutes les cases de l'adversaire sont vides !\n");
+        int offset = p->joueurCourant == 0 ? 0 : 6;
+
+        // recherche d'un coup pour nourrir l'adversaire
+        int i = offset;
+        int coupPossible = 0;
+        while (i < 6 + offset && coupPossible == 0) {
+            if (p->plateau[i] >= (6 - i + offset)) {
+                coupPossible = 1;
+            }
+            i++;
+        }
+
+        if (coupPossible == 0) {
+            // le joueur courant ramasse ses graines
+            printf("Le joueur %d ramasse ses graines\n", (p->joueurCourant)+1);
+            p->scores[p->joueurCourant] += nbGrainesJoueurCourant;
+
+            printf("J1 [%d] - [%d] J2\n", p->scores[0], p->scores[1]);
+
+            if (p->scores[0] > p->scores[1]) {
+                return JOUEUR1;
+            }
+
+            if (p->scores[1] > p->scores[0]) {
+                return JOUEUR2;
+            }
+
+            if (p->scores[0] == p->scores[1]) {
+                return EGALITE;
+            }
+        }
+    }
+
+    return PAS_DE_GAGNANT;
+}
 
