@@ -1,7 +1,7 @@
 #include "sauvegarde.h"
 
 #define SAVEDIR "saves/"
-#define FILE_EXTENSION ".awale"
+#define FILE_EXTENSION "awale"
 
 partieSauvegardee* creerSauvegarde(char* nomJ1, char* nomJ2, int premierJoueur) {
     partieSauvegardee* partie = malloc(sizeof(partieSauvegardee));
@@ -26,7 +26,7 @@ void ajouterCoups(partieSauvegardee* partie, int* coups, int nbCoups) {
 
 void sauvegarderPartie(partieSauvegardee* partie) {
     char filename[BUF_SIZE * 2 + 16];
-    sprintf(filename, "%s%s_%s_%d%s", SAVEDIR, partie->nomJoueur1, partie->nomJoueur2, (int) time(NULL), FILE_EXTENSION);
+    sprintf(filename, "%s%s_%s_%d.%s", SAVEDIR, partie->nomJoueur1, partie->nomJoueur2, (int) time(NULL), FILE_EXTENSION);
     FILE* f = fopen(filename, "wb");
     fwrite(&partie->nbCoups, sizeof(int), 1, f);
     fwrite(partie->coups, sizeof(int), partie->nbCoups, f);
@@ -71,31 +71,24 @@ partieSauvegardee* chargerPartie(char* filename) {
     return partie;
 }
 
-// int main() {
+char* listerSauvegardes(char* filtreNom) {
+    DIR* d = opendir(SAVEDIR);
+    struct dirent* fichier = readdir(d);
+    char* buffer = malloc(sizeof(char) * 1024);
 
-//     partieSauvegardee* p = creerSauvegarde("i", "p", 0);
-//     printf("Partie %s vs %s - %d coup(s) joué(s) - liste des coups : ", p->nomJoueur1, p->nomJoueur2, p->nbCoups);
-//     for (int i=0; i<p->nbCoups; i++) {
-//         printf("%d ", p->coups[i]);
-//     }
-//     printf("\n");
+    // parcours des fichiers du dossier
+    while (fichier != NULL) {
+        if (strstr(fichier->d_name, FILE_EXTENSION) != NULL && strstr(fichier->d_name, filtreNom) != NULL) {
+            strcat(buffer, fichier->d_name);
+            strcat(buffer, ",");
+        }
 
-//     int tableau[10] = {1, 2, 5, 6, 4, 3, 5, 2, 1, 4};
-//     ajouterCoups(p, tableau, 10);
+        fichier = readdir(d);
+    }
 
-//     sauvegarderPartie(p);
-//     partieSauvegardee* newP = chargerPartie("i_p_1698154552.awale");
+    return buffer;
+}
 
-//     if (newP == NULL) {
-//         printf("guez le fichier\n");
-//         exit(1);
-//     }
-
-//     printf("Partie %s vs %s - %d coup(s) joué(s) - liste des coups : ", newP->nomJoueur1, newP->nomJoueur2, newP->nbCoups);
-//     for (int i=0; i<newP->nbCoups; i++) {
-//         printf("%d ", newP->coups[i]);
-//     }
-//     printf("\n");
-
-//     sauvegarderPartie(p);
-// }
+int main() {
+    printf("%s\n", listerSauvegardes("pierre"));
+}

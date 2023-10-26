@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #include "includes.h"
 
@@ -28,5 +30,7 @@ void sauvegarderPartie(partieSauvegardee* partie);
 
 // charge une partie depuis un fichier
 partieSauvegardee* chargerPartie(char* filename);
+
+char* listerSauvegardes(char* filtreNom);
 
 #endif /* guard */
