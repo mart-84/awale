@@ -68,6 +68,17 @@ static void app(const char *address, const char *name)
                buffer[BUF_SIZE - 1] = 0;
             }
          }
+         if (strcmp(buffer, "/quit") == 0)
+         {
+            printf("==============================================\n");
+            printf("    ___                                 _     \n");
+            printf("   /   | __  __   ________ _   ______  (_)____\n");
+            printf("  / /| |/ / / /  / ___/ _ \\ | / / __ \\/ / ___/\n");
+            printf(" / ___ / /_/ /  / /  /  __/ |/ / /_/ / / /    \n");
+            printf("/_/  |_\\__,_/  /_/   \\___/|___/\\____/_/_/     \n");
+            printf("==============================================\n");
+            break;
+         }
          write_server(sock, buffer);
       }
       else if (FD_ISSET(sock, &rdfs))
