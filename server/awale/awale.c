@@ -1,10 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
+
 #include "awale.h"
 
 #define FIN_PARTIE -102
-
 
 void init(partie *p)
 {
@@ -48,7 +49,45 @@ void printBoard(partie *p)
     printf("A J%d de jouer...\n", p->joueurCourant + 1);
 }
 
-int interpreterCoup(partie *p, char choix) {
+char *sprintBoard(partie *p, char *buffer, char *joueur1, char *joueur2)
+{
+    char line[100];
+    strcpy(buffer, "\n\n+----+-----------------------+----+\n");
+    if (p->joueurCourant == 0)
+    {
+        // J2 | plateau : 11 -> 6 | score J2
+        sprintf(line, "| J2 | %d | %d | %d | %d | %d | %d |  %d |\n", p->plateau[11], p->plateau[10], p->plateau[9], p->plateau[8], p->plateau[7], p->plateau[6], p->scores[1]);
+    }
+    else
+    {
+        // J1 | plateau : 5 -> 0 | score J1
+        sprintf(line, "| J1 | %d | %d | %d | %d | %d | %d |  %d |\n", p->plateau[5], p->plateau[4], p->plateau[3], p->plateau[2], p->plateau[1], p->plateau[0], p->scores[0]);
+    }
+    strcat(buffer, line);
+    strcpy(line, "|    |-----------------------|    |\n");
+    strcat(buffer, line);
+    if (p->joueurCourant == 0)
+    {
+        // score J1 | plateau : 0 -> 5 | J1
+        sprintf(line, "|  %d | %d | %d | %d | %d | %d | %d | J1 |\n", p->scores[0], p->plateau[0], p->plateau[1], p->plateau[2], p->plateau[3], p->plateau[4], p->plateau[5]);
+    }
+    else
+    {
+        // score J2 | plateau : 6 -> 11 | J2
+        sprintf(line, "|  %d | %d | %d | %d | %d | %d | %d | J2 |\n", p->scores[1], p->plateau[6], p->plateau[7], p->plateau[8], p->plateau[9], p->plateau[10], p->plateau[11]);
+    }
+    strcat(buffer, line);
+    strcpy(line, "+----+-----------------------+----+\n");
+    strcat(buffer, line);
+    strcpy(line, "       A   B   C   D   E   F\n");
+    strcat(buffer, line);
+    sprintf(line, "Au tour de %s de jouer ...\n", p->joueurCourant == 0 ? joueur1 : joueur2);
+    strcat(buffer, line);
+    return buffer;
+}
+
+int interpreterCoup(partie *p, char choix)
+{
     int coup;
 
     switch (choix)
@@ -90,7 +129,8 @@ int interpreterCoup(partie *p, char choix) {
     return coup;
 }
 
-int calculerGrainesJoueur(int *plateau, int joueur) {
+int calculerGrainesJoueur(int *plateau, int joueur)
+{
     int somme = 0;
     int offset = joueur == 0 ? 0 : 6;
     for (int i = 0; i < 6; i++)
@@ -106,19 +146,20 @@ int calculerScore(partie *p, int caseArrivee, int *plateau)
     int limite = p->joueurCourant == 0 ? 6 : 0;
 
     int plateauTmp[NB_CASES];
-    for (int i = 0; i < NB_CASES; i++) {
+    for (int i = 0; i < NB_CASES; i++)
+    {
         plateauTmp[i] = plateau[i];
     }
-    
+
     // verification que la case d'arrivée se situe dans la bonne moitié du tableau selon le joueur courant
-    if ((p->joueurCourant == 0 && caseArrivee <= 5) 
-    || (p->joueurCourant == 1 && caseArrivee >= 6))
+    if ((p->joueurCourant == 0 && caseArrivee <= 5) || (p->joueurCourant == 1 && caseArrivee >= 6))
     {
         printf("Case d'arrivée chez le joueur courant !\n");
         return 0;
-
-    } else {
-        while((plateauTmp[caseArrivee] == 2 || plateauTmp[caseArrivee] == 3) && caseArrivee >= limite )
+    }
+    else
+    {
+        while ((plateauTmp[caseArrivee] == 2 || plateauTmp[caseArrivee] == 3) && caseArrivee >= limite)
         {
             score += plateauTmp[caseArrivee];
             plateauTmp[caseArrivee] = 0;
@@ -133,10 +174,11 @@ int calculerScore(partie *p, int caseArrivee, int *plateau)
         return 0; // famine, on ne ramasse pas les graines
     }
 
-    for (int i = 0; i < NB_CASES; i++) {
+    for (int i = 0; i < NB_CASES; i++)
+    {
         plateau[i] = plateauTmp[i];
     }
-    
+
     return score;
 }
 
@@ -150,7 +192,8 @@ int jouer(partie *p, int coup)
     }
 
     int plateau[NB_CASES];
-    for (int i = 0; i < NB_CASES; i++) {
+    for (int i = 0; i < NB_CASES; i++)
+    {
         plateau[i] = p->plateau[i];
     }
 
@@ -182,7 +225,7 @@ int jouer(partie *p, int coup)
     }
 
     p->joueurCourant = (p->joueurCourant + 1) % 2;
-    
+
     // calcul du score du awale
 
     return EXIT_SUCCESS;
@@ -193,19 +236,27 @@ void jouerCoupClavier(partie *p)
 {
     char choix;
     int coup, status;
-    
+
     printBoard(p);
     int gagnant = finDePartie(p);
-    if (gagnant != PAS_DE_GAGNANT) {
+    if (gagnant != PAS_DE_GAGNANT)
+    {
         printf("Fin de partie : ");
 
-        if (gagnant == JOUEUR1) {
+        if (gagnant == JOUEUR1)
+        {
             printf("victoire du joueur 1\n");
-        } else if (gagnant == JOUEUR2) {
+        }
+        else if (gagnant == JOUEUR2)
+        {
             printf("victoire du joueur 2\n");
-        } else if (gagnant == EGALITE) {
+        }
+        else if (gagnant == EGALITE)
+        {
             printf("égalité\n");
-        } else {
+        }
+        else
+        {
             printf("????????????");
         }
 
@@ -226,12 +277,15 @@ void jouerCoupClavier(partie *p)
     } while (status == EXIT_FAILURE);
 }
 
-int finDePartie(partie *p) {
-    if (p->scores[0] >= NB_GRAINES_VICTOIRE) {
+int finDePartie(partie *p)
+{
+    if (p->scores[0] >= NB_GRAINES_VICTOIRE)
+    {
         return JOUEUR1;
     }
 
-    if (p->scores[1] >= NB_GRAINES_VICTOIRE) {
+    if (p->scores[1] >= NB_GRAINES_VICTOIRE)
+    {
         return JOUEUR2;
     }
     int nbGrainesJoueurCourant = calculerGrainesJoueur(p->plateau, p->joueurCourant);
@@ -241,39 +295,46 @@ int finDePartie(partie *p) {
     {
         printf("Toutes les cases du joueur courant sont vides !\n");
         // l'adversaire ramasse ses graines
-        printf("Le joueur %d ramasse ses graines\n", (p->joueurCourant)+1);
+        printf("Le joueur %d ramasse ses graines\n", (p->joueurCourant) + 1);
         p->scores[(p->joueurCourant + 1) % 2] += nbGrainesAdversaire;
-
-    } else if (nbGrainesAdversaire == 0) {
+    }
+    else if (nbGrainesAdversaire == 0)
+    {
         printf("Toutes les cases de l'adversaire sont vides !\n");
         int offset = p->joueurCourant == 0 ? 0 : 6;
 
         // recherche d'un coup pour nourrir l'adversaire
         int i = offset;
         int coupPossible = 0;
-        while (i < 6 + offset && coupPossible == 0) {
-            if (p->plateau[i] >= (6 - i + offset)) {
+        while (i < 6 + offset && coupPossible == 0)
+        {
+            if (p->plateau[i] >= (6 - i + offset))
+            {
                 coupPossible = 1;
             }
             i++;
         }
 
-        if (coupPossible == 0) {
+        if (coupPossible == 0)
+        {
             // le joueur courant ramasse ses graines
-            printf("Le joueur %d ramasse ses graines\n", (p->joueurCourant)+1);
+            printf("Le joueur %d ramasse ses graines\n", (p->joueurCourant) + 1);
             p->scores[p->joueurCourant] += nbGrainesJoueurCourant;
 
             printf("J1 [%d] - [%d] J2\n", p->scores[0], p->scores[1]);
 
-            if (p->scores[0] > p->scores[1]) {
+            if (p->scores[0] > p->scores[1])
+            {
                 return JOUEUR1;
             }
 
-            if (p->scores[1] > p->scores[0]) {
+            if (p->scores[1] > p->scores[0])
+            {
                 return JOUEUR2;
             }
 
-            if (p->scores[0] == p->scores[1]) {
+            if (p->scores[0] == p->scores[1])
+            {
                 return EGALITE;
             }
         }
@@ -281,4 +342,3 @@ int finDePartie(partie *p) {
 
     return PAS_DE_GAGNANT;
 }
-

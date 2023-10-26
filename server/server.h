@@ -38,7 +38,7 @@ static int init_connection(void);
 static void end_connection(int sock);
 static int read_client(SOCKET sock, char *buffer);
 static void write_client(SOCKET sock, const char *buffer);
-static void send_message_to_all_clients(elementListeClient *clients, Client sender, int actual, const char *buffer, char from_server);
+static void send_message_to_all_clients(elementListeClient *clients, Client sender, const char *buffer, char from_server);
 static void remove_client(elementListeClient *clients, Client client);
 static void clear_clients(elementListeClient *clients, int actual);
 

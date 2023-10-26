@@ -5,15 +5,21 @@
 
 typedef struct elementListeMatch
 {
-    struct elementListeMatch *suivant;
     MatchAwale *match;
+    struct elementListeMatch *suivant;
 } elementListeMatch;
 
 elementListeMatch *ajouterMatch(elementListeMatch *liste, MatchAwale *match);
 
-elementListeMatch *supprimerMatch(elementListeMatch *liste, MatchAwale *match);
+// Supprime un match de la liste, et renvoie la liste modifiée
+// Si supprimerMatch vaut 1, supprime le match, sinon supprime juste l'élément de la liste
+elementListeMatch *supprimerMatch(elementListeMatch *liste, MatchAwale *match, int supprimerMatch);
 
-elementListeMatch *rechercherMatchClients(elementListeMatch *liste, Client *c1, Client *c2);
+// Renvoie un seul match, car on ne peut avoir qu'un seul match entre deux clients, que ce soit en attente ou en cours
+MatchAwale *rechercherMatchClients(elementListeMatch *liste, Client *c1, Client *c2);
+
+// Renvoie tous les matchs d'un client, car un client peut avoir des invitations de plusieurs joueurs
+elementListeMatch *rechercherMatchClient(elementListeMatch *liste, Client *c1);
 
 void clearListeMatch(elementListeMatch *liste);
 

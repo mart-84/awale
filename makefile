@@ -1,5 +1,5 @@
 GCC=gcc
-CFLAGS=-Wall -Werror -c
+CFLAGS=-Wall -Werror -c -g
 LDFLAGS=-Wall -Werror
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
 
@@ -11,14 +11,17 @@ CLIENT=$(BINDIR)/client
 SERVER=$(BINDIR)/server
 TARGET=$(CLIENT) $(SERVER)
 
-SRCS=client/client.c server/listeClient.c server/listeMatch.c server/server.c server/awale/awale.c server/sauvegarde.c
+CLIENT_SRCS=client/client.c
+SERVER_SRCS=server/server.c server/listeClient.c server/listeMatch.c server/awale/awale.c server/sauvegarde.c
+
+SRCS=$(CLIENT_SRCS) $(SERVER_SRCS)
 OBJS=$(SRCS:%.c=$(OBJDIR)/%.o)
 
 all: $(TARGET)
 	@echo Build complete
 
-$(CLIENT): $(OBJDIR)/client/client.o
-$(SERVER): $(OBJDIR)/server/server.o $(OBJDIR)/server/listeClient.o $(OBJDIR)/server/listeMatch.o $(OBJDIR)/server/awale/awale.o $(OBJDIR)/server/sauvegarde.o
+$(CLIENT): $(CLIENT_SRCS:%.c=$(OBJDIR)/%.o)
+$(SERVER): $(SERVER_SRCS:%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/%:
 	@mkdir -p $(@D)
@@ -39,7 +42,7 @@ include $(wildcard $(DEPFILES))
 .PHONY: clean start
 
 start:
-	gnome-terminal -- ${SERVER} && gnome-terminal --tab -- ${CLIENT} 127.0.0.1 valery && gnome-terminal --tab -- ${CLIENT} 127.0.0.1 georges && gnome-terminal --tab -- ${CLIENT} 127.0.0.1 jacques
+	gnome-terminal -- ${SERVER} && gnome-terminal --tab -- ${CLIENT} 127.0.0.1 a && gnome-terminal --tab -- ${CLIENT} 127.0.0.1 b && gnome-terminal --tab -- ${CLIENT} 127.0.0.1 c
 
 
 clean:

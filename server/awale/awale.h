@@ -30,16 +30,33 @@ typedef struct
 void init(partie *p);
 
 /**
- * Affiche le plateau de jeu
+ * Formatter le plateau de jeu
  * @param p : partie à afficher
 */
 void printBoard(partie *p);
 
 /**
+ * Affiche le plateau de jeu
+ * @param p : partie à afficher
+ * @param buffer : buffer dans lequel écrire le plateau
+ * @return buffer
+*/
+char * sprintBoard(partie *p, char *buffer, char *joueur1, char *joueur2);
+
+/**
+ * Interprète le coup joué par le joueur
+ * Insensible à la casse
+ * @param p : partie en cours
+ * @param choix : choix du joueur entre A et F
+ * @return case à jouer, entre 0 et 11, -1 si le coup est invalide
+*/
+int interpreterCoup(partie *p, char choix);
+
+/**
  * Joue un coup
  * @param p : partie en cours
  * @param caseJouee : case à jouer, entre 0 et 11
- * @return 0 si le coup est invalide, 1 sinon
+ * @return -1 si le coup est invalide, 0 sinon
 */
 int jouer(partie *p, int caseJouee);
 

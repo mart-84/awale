@@ -21,11 +21,13 @@ elementListeMatch *ajouterMatch(elementListeMatch *liste, MatchAwale *match)
     return liste;
 }
 
-elementListeMatch *supprimerMatch(elementListeMatch *liste, MatchAwale *match)
+elementListeMatch *supprimerMatch(elementListeMatch *liste, MatchAwale *match, int supprimerMatch)
 {
     if (liste->match == match)
     {
         elementListeMatch *ptr = liste->suivant;
+        if (supprimerMatch == 1)
+            free(liste->match);
         free(liste);
         return ptr;
     }
@@ -36,6 +38,8 @@ elementListeMatch *supprimerMatch(elementListeMatch *liste, MatchAwale *match)
         {
             elementListeMatch *supprimer = ptr->suivant;
             ptr->suivant = supprimer->suivant;
+            if (supprimerMatch == 1)
+                free(supprimer->match);
             free(supprimer);
             return liste;
         }
@@ -44,13 +48,27 @@ elementListeMatch *supprimerMatch(elementListeMatch *liste, MatchAwale *match)
     return liste;
 }
 
-elementListeMatch *rechercherMatchClients(elementListeMatch *liste, Client *c1, Client *c2)
+MatchAwale *rechercherMatchClients(elementListeMatch *liste, Client *c1, Client *c2)
+{
+    elementListeMatch *ptr = liste;
+    while (ptr != NULL)
+    {
+        if ((ptr->match->joueur1 == c1 && ptr->match->joueur2 == c2) || (ptr->match->joueur1 == c2 && ptr->match->joueur2 == c1))
+        {
+            return ptr->match;
+        }
+        ptr = ptr->suivant;
+    }
+    return NULL;
+}
+
+elementListeMatch *rechercherMatchClient(elementListeMatch *liste, Client *c1)
 {
     elementListeMatch *ptr = liste;
     elementListeMatch *matchs = NULL;
     while (ptr != NULL)
     {
-        if ((ptr->match->joueur1 == c1 && ptr->match->joueur2 == c2) || (ptr->match->joueur1 == c2 && ptr->match->joueur2 == c1))
+        if (ptr->match->joueur1 == c1 || ptr->match->joueur2 == c1)
         {
             matchs = ajouterMatch(matchs, ptr->match);
         }
