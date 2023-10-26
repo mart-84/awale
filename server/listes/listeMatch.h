@@ -1,7 +1,7 @@
 #ifndef LISTE_MATCH_H
 #define LISTE_MATCH_H
 
-#include "match.h"
+#include "../match.h"
 
 typedef struct elementListeMatch
 {

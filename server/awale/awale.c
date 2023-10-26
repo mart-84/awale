@@ -154,7 +154,6 @@ int calculerScore(partie *p, int caseArrivee, int *plateau)
     // verification que la case d'arrivée se situe dans la bonne moitié du tableau selon le joueur courant
     if ((p->joueurCourant == 0 && caseArrivee <= 5) || (p->joueurCourant == 1 && caseArrivee >= 6))
     {
-        printf("Case d'arrivée chez le joueur courant !\n");
         return 0;
     }
     else
@@ -297,6 +296,20 @@ int finDePartie(partie *p)
         // l'adversaire ramasse ses graines
         printf("Le joueur %d ramasse ses graines\n", (p->joueurCourant) + 1);
         p->scores[(p->joueurCourant + 1) % 2] += nbGrainesAdversaire;
+        if (p->scores[0] > p->scores[1])
+        {
+            return JOUEUR1;
+        }
+
+        if (p->scores[1] > p->scores[0])
+        {
+            return JOUEUR2;
+        }
+
+        if (p->scores[0] == p->scores[1])
+        {
+            return EGALITE;
+        }
     }
     else if (nbGrainesAdversaire == 0)
     {

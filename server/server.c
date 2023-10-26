@@ -5,8 +5,8 @@
 
 #include "server.h"
 #include "client.h"
-#include "listeClient.h"
-#include "listeMatch.h"
+#include "listes/listeClient.h"
+#include "listes/listeMatch.h"
 #include "match.h"
 #include "awale/awale.h"
 
@@ -261,7 +261,7 @@ static void app(void)
                         buffer[0] = 0;
                         strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
                         strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
-                        strncat(buffer, " vous défie dans un duel !\n", BUF_SIZE - strlen(buffer) - 1);
+                        strncat(buffer, " vous défie dans un duel !\nUtilisez la commande /accepte <pseudo> pour commencer le match", BUF_SIZE - strlen(buffer) - 1);
                         write_client(c->sock, buffer);
 
                         // Création du match et ajout à la liste des matchs
@@ -271,6 +271,12 @@ static void app(void)
                         m->joueur1 = client;
                         m->joueur2 = c;
                         m->partie = p;
+                        p->plateau[0] = 1;
+                        p->plateau[5] = 1;
+                        p->plateau[6] = 1;
+                        p->plateau[11] = 1;
+                        p->scores[0] = 24;
+                        p->scores[1] = 24;
                         m->etat = ATTENTE;
                         listeMatchs = ajouterMatch(listeMatchs, m);
                      }
@@ -468,7 +474,7 @@ static void app(void)
                         write_client(match->joueur2->sock, buffer);
 
                         // supprimer le match de la liste des matchs
-                        supprimerMatch(listeMatchs, match, 1);
+                        listeMatchs = supprimerMatch(listeMatchs, match, 1);
 
                      }
                   }

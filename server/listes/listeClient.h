@@ -1,7 +1,7 @@
 #ifndef LISTE_CLIENT_H
 #define LISTE_CLIENT_H
 
-#include "client.h"
+#include "../client.h"
 
 typedef struct elementListeClient
 {

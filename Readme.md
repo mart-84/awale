@@ -1,12 +1,19 @@
 
 # Todos
 - Affichage et édition des biographies
+
 - Reconnexion :
     - Proposer de reprendre la partie en cours (uniquement si l'autre joueur est toujours connecté)
     - Si le joueur refuse de reprendre : il perd
 - A la déconnexion, si les deux joueurs d'une partie sont déconnectés : supprimer le match
+
 - Vérifier le nombre de paramètres pour les commandes
 - Pour accepter une invitation, vérifier aussi que le joueur n'est pas déjà dans une partie
+- Refuser une partie
+
+- Mettre à jour le /help
+
+- Refactoriser le code (adieu la fonction de 500 lignes o/)
 
 # Commandes
 Les commandes commencent par le préfixe /
