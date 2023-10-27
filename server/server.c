@@ -343,6 +343,14 @@ static void app(void)
                         continue;
                      }
 
+                     // vérifier que l'adversaire est connecté
+                     if (adversaire->isConnected == 0)
+                     {
+                        write_client(client->sock, "Votre adversaire n'est pas connecté. Le match est annulé.\n");
+                        listeInvitations = supprimerInvitation(listeInvitations, invit);
+                        continue;
+                     }
+
                      // Vérifier si l'adversaire est en match avec un autre joueur
                      // Dans ce cas, on annule l'invitation et on ne lance pas de nouveau match
                      match = rechercherMatchClient(listeMatchs, adversaire);
