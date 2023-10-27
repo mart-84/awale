@@ -2,8 +2,6 @@
 # Todos
 - Vérifier le nombre de paramètres pour les commandes
 
-- Voir la liste de ses invitations
-
 - Mettre à jour le /help et le Readme
 
 - Refactoriser le code (adieu la fonction de 150000 lignes o/)

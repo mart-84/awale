@@ -12,6 +12,11 @@ elementListeInvitation *ajouterInvitation(elementListeInvitation* liste, Invitat
 
 Invitation *rechercherInvitationParClients(elementListeInvitation* liste, Client *c1, Client *c2);
 
+elementListeInvitation *rechercherInvitationClient(elementListeInvitation* liste, Client *client);
+
 elementListeInvitation *supprimerInvitation(elementListeInvitation *liste, Invitation *invitation);
+
+// freeInvitation: 0 = false, 1 = true
+void clearListeInvitation(elementListeInvitation *liste, int freeInvitation);
 
 #endif /* guard */

@@ -557,6 +557,35 @@ static void app(void)
                      // supprimer le match de la liste des matchs
                      listeMatchs = supprimerMatch(listeMatchs, match, 1);
                   }
+                  else if (strcmp(commande, "/listeinvitations") == 0)
+                  {
+                     elementListeInvitation *listeInvit = rechercherInvitationClient(listeInvitations, client);
+                     if (listeInvit == NULL)
+                     {
+                        write_client(client->sock, "Vous n'avez aucune invitation\n");
+                        continue;
+                     }
+
+                     buffer[0] = 0;
+                     strncat(buffer, "Liste de vos invitations :\n", BUF_SIZE - strlen(buffer) - 1);
+                     while (listeInvit != NULL)
+                     {
+                        Invitation *invit = listeInvit->invitation;
+                        if (invit->invite == client)
+                        {
+                           strncat(buffer, " - ", BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, invit->inviteur->name, BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, " vous a invité\n", BUF_SIZE - strlen(buffer) - 1);
+                        } else {
+                           strncat(buffer, " - Vous avez invité ", BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, invit->invite->name, BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
+                        }
+                        listeInvit = listeInvit->suivant;
+                     }
+                     clearListeInvitation(listeInvit, 0);
+                     write_client(client->sock, buffer);
+                  }
                   else
                   {
                      write_client(client->sock, "Commande inconnue\n");
