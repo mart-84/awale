@@ -2,8 +2,14 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <ao/ao.h>
+#include <mpg123.h>
+#include <pthread.h>
 
 #include "client.h"
+
+#define BITS 8
+#define MUSIC_PATH "music.mp3"
 
 static void init(void)
 {
@@ -25,10 +31,60 @@ static void end(void)
 #endif
 }
 
+void *playMusic(void *param)
+{
+   mpg123_handle *mh;
+   unsigned char *buffer_mp3;
+   size_t buffer_size;
+   size_t done;
+   int err;
+
+   int driver;
+   ao_device *dev;
+
+   ao_sample_format format;
+   int channels, encoding;
+   long rate;
+
+   /* initializations */
+   ao_initialize();
+   driver = ao_default_driver_id();
+   mpg123_init();
+   mh = mpg123_new(NULL, &err);
+   buffer_size = mpg123_outblock(mh);
+   buffer_mp3 = (unsigned char *)malloc(buffer_size * sizeof(unsigned char));
+
+   /* open the file and get the decoding format */
+   mpg123_open(mh, MUSIC_PATH);
+   mpg123_getformat(mh, &rate, &channels, &encoding);
+
+   /* set the output format and open the output device */
+   format.bits = mpg123_encsize(encoding) * BITS;
+   format.rate = rate;
+   format.channels = channels;
+   format.byte_format = AO_FMT_NATIVE;
+   format.matrix = 0;
+   dev = ao_open_live(driver, &format, NULL);
+
+   /* decode and play */
+   while (mpg123_read(mh, buffer_mp3, buffer_size, &done) == MPG123_OK)
+      ao_play(dev, buffer_mp3, done);
+
+   /* clean up */
+   free(buffer_mp3);
+   ao_close(dev);
+   mpg123_close(mh);
+   mpg123_delete(mh);
+   mpg123_exit();
+   ao_shutdown();
+   return NULL;
+}
+
 static void app(const char *address, const char *name)
 {
    SOCKET sock = init_connection(address);
    char buffer[BUF_SIZE];
+   pthread_t thread = 0;
 
    fd_set rdfs;
 
@@ -78,6 +134,27 @@ static void app(const char *address, const char *name)
             printf("/_/  |_\\__,_/  /_/   \\___/|___/\\____/_/_/     \033[0m\n");
             printf("==============================================\n");
             break;
+         }
+         else if (strcmp(buffer, "/music enable") == 0)
+         {
+            if (thread != 0)
+            {
+               pthread_cancel(thread);
+               thread = 0;
+            }
+            pthread_create(&thread, NULL, playMusic, NULL);
+            printf("Music enabled\n");
+            continue;
+         }
+         else if (strcmp(buffer, "/music disable") == 0)
+         {
+            if (thread != 0)
+            {
+               pthread_cancel(thread);
+               thread = 0;
+               printf("Music disabled\n");
+            }
+            continue;
          }
          write_server(sock, buffer);
       }

@@ -1,6 +1,7 @@
 GCC=gcc
-CFLAGS=-Wall -Werror -c -g
-LDFLAGS=-Wall -Werror
+CFLAGS=-Wall -c -g
+LDFLAGS=-Wall -Werror -L libs/lib -I libs/include -lmpg123 -lao
+LIBS=-L libs/lib -I libs/include -lmpg123 -lao -lpthread
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
 
 BINDIR=bin
@@ -25,12 +26,12 @@ $(SERVER): $(SERVER_SRCS:%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/%:
 	@mkdir -p $(@D)
-	$(GCC) $(LDFLAGS) -o $@ $^
+	$(GCC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 $(OBJDIR)/%.o: %.c $(DEPDIR)/%.d $(DEPDIR)
 	@mkdir -p $(@D)
 	@mkdir -p $(subst $(OBJDIR),$(DEPDIR),$(dir $@))
-	$(GCC) $(DEPFLAGS) $(CFLAGS) -o $@ $<
+	$(GCC) $(DEPFLAGS) $(CFLAGS) -o $@ $< $(LIBS)
 
 $(DEPDIR):
 	@mkdir -p $(DEPDIR)
