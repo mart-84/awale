@@ -111,13 +111,37 @@ static void app(void)
             }
             else
             {
-               // TODO : si une partie était en cours, lui proposer de la reprendre
-
                printf("Client %s reconnected\n", buffer);
                c->isConnected = 1;
                c->sock = clientSock;
                actual++;
                send_welcome_message(c);
+
+               // vérifier si le joueur a un match en cours
+               MatchAwale *match = rechercherMatchClient(listeMatchs, c);
+               if (match != NULL)
+               {
+                  Client *adversaire = match->joueur1 == c ? match->joueur2 : match->joueur1;
+                  // afficher un message au joueur puis lui envoyer le plateau
+                  buffer[0] = 0;
+                  strncat(buffer, "Vous avez été déconnecté pendant un match contre ", BUF_SIZE - strlen(buffer) - 1);
+                  strncat(buffer, adversaire->name, BUF_SIZE - strlen(buffer) - 1);
+                  strncat(buffer, ". Le match reprend !\n", BUF_SIZE - strlen(buffer) - 1);
+                  write_client(c->sock, buffer);
+
+                  // prévenir l'adversaire de la reconnexion
+                  buffer[0] = 0;
+                  strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
+                  strncat(buffer, c->name, BUF_SIZE - strlen(buffer) - 1);
+                  strncat(buffer, " s'est reconnecté. Le match reprend !\n", BUF_SIZE - strlen(buffer) - 1);
+                  write_client(adversaire->sock, buffer);
+                  
+                  // envoyer le plateau aux deux joueurs
+                  buffer[0] = 0;
+                  sprintBoard(match->partie, buffer, match->joueur1->name, match->joueur2->name);
+                  write_client(c->sock, buffer);
+                  write_client(adversaire->sock, buffer);
+               }
             }
             continue;
          }
@@ -157,12 +181,31 @@ static void app(void)
                /* client disconnected */
                if (c == 0)
                {
+                  // récuperer le match associé au joueur
+                  MatchAwale *match = rechercherMatchClient(listeMatchs, client);
+                  if (match != NULL)
+                  {
+                     // si l'adversaire est déconnecté, supprimer le match
+                     Client *adversaire = match->joueur1 == client ? match->joueur2 : match->joueur1;
+                     if (adversaire->isConnected == 0)
+                     {
+                        listeMatchs = supprimerMatch(listeMatchs, match, 0);
+                        printf("Match supprimé suite à la déconnexion des deux joueurs\n");
+                     }
+                     else
+                     {
+                        // envoyer un message à l'adversaire
+                        buffer[0] = 0;
+                        strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
+                        strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
+                        strncat(buffer, " s'est déconnecté. Le match reprendra quand il sera de nouveau connecté.\n", BUF_SIZE - strlen(buffer) - 1);
+                        strncat(buffer, "Vous pouvez utiliser la commnande /abandonne pour arrêter le match.\n", BUF_SIZE - strlen(buffer) - 1);
+                        write_client(adversaire->sock, buffer);
+                     }
+                  }
                   closesocket(client->sock);
                   remove_client(listeClients, *client);
-                  strncpy(buffer, client->name, BUF_SIZE - 1);
-                  strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
                   actual--;
-                  send_message_to_all_clients(listeClients, *client, buffer, 1);
                   printf("Client %s disconnected\n", client->name);
                }
                else if (buffer[0] == '/')
@@ -478,6 +521,41 @@ static void app(void)
                            write_client(client->sock, buffer);
                         }
                      }
+                  }
+                  else if (strcmp(commande, "/abandonne") == 0)
+                  {
+                     MatchAwale *match = rechercherMatchClient(listeMatchs, client);
+                     if (match == NULL)
+                     {
+                        write_client(client->sock, "Vous n'êtes pas en match\n");
+                        continue;
+                     }
+
+                     // vérifier que l'adversaire est connecté
+                     Client *adversaire = match->joueur1 == client ? match->joueur2 : match->joueur1;
+                     if (adversaire->isConnected == 0)
+                     {
+                        write_client(client->sock, "Votre adversaire n'est pas connecté. Le match est nul.\n");
+                        listeMatchs = supprimerMatch(listeMatchs, match, 1);
+                        continue;
+                     }
+
+                     // Envoyer un message à l'adversaire
+                     buffer[0] = 0;
+                     strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " a abandonné le match. Vous le remportez !\n", BUF_SIZE - strlen(buffer) - 1);
+                     write_client(adversaire->sock, buffer);
+
+                     // Envoyer un message au joueur qui abandonne
+                     buffer[0] = 0;
+                     strncat(buffer, "Vous avez abandonné le match contre ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, adversaire->name, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, ". Vous avez perdu !\n", BUF_SIZE - strlen(buffer) - 1);
+                     write_client(client->sock, buffer);
+
+                     // supprimer le match de la liste des matchs
+                     listeMatchs = supprimerMatch(listeMatchs, match, 1);
                   }
                   else
                   {
