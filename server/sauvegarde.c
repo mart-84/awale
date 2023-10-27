@@ -3,8 +3,9 @@
 #define SAVEDIR "saves/"
 #define FILE_EXTENSION "awale"
 
-partieSauvegardee* creerSauvegarde(char* nomJ1, char* nomJ2, int premierJoueur) {
-    partieSauvegardee* partie = malloc(sizeof(partieSauvegardee));
+partieSauvegardee *creerSauvegarde(char *nomJ1, char *nomJ2, int premierJoueur)
+{
+    partieSauvegardee *partie = malloc(sizeof(partieSauvegardee));
     strcpy(partie->nomJoueur1, nomJ1);
     strcpy(partie->nomJoueur2, nomJ2);
     partie->nbCoups = 0;
@@ -14,20 +15,23 @@ partieSauvegardee* creerSauvegarde(char* nomJ1, char* nomJ2, int premierJoueur) 
     return partie;
 }
 
-void ajouterCoups(partieSauvegardee* partie, int* coups, int nbCoups) {
+void ajouterCoups(partieSauvegardee *partie, int *coups, int nbCoups)
+{
     // agrandissment de la zone mémoire
-    partie->coups = (int*) realloc(partie->coups, sizeof(int) * (nbCoups + partie->nbCoups));
+    partie->coups = (int *)realloc(partie->coups, sizeof(int) * (nbCoups + partie->nbCoups));
     // ajout des nouveaux coups à la fin du tableau
-    for (int i=0; i<nbCoups; i++){
+    for (int i = 0; i < nbCoups; i++)
+    {
         partie->coups[partie->nbCoups + i] = coups[i];
     }
     partie->nbCoups += nbCoups;
 }
 
-void sauvegarderPartie(partieSauvegardee* partie) {
+void sauvegarderPartie(partieSauvegardee *partie)
+{
     char filename[BUF_SIZE * 2 + 16];
-    sprintf(filename, "%s%s_%s_%d.%s", SAVEDIR, partie->nomJoueur1, partie->nomJoueur2, (int) time(NULL), FILE_EXTENSION);
-    FILE* f = fopen(filename, "wb");
+    sprintf(filename, "%s%s_%s_%d.%s", SAVEDIR, partie->nomJoueur1, partie->nomJoueur2, (int)time(NULL), FILE_EXTENSION);
+    FILE *f = fopen(filename, "wb");
     fwrite(&partie->nbCoups, sizeof(int), 1, f);
     fwrite(partie->coups, sizeof(int), partie->nbCoups, f);
 
@@ -43,15 +47,17 @@ void sauvegarderPartie(partieSauvegardee* partie) {
     fclose(f);
 }
 
-partieSauvegardee* chargerPartie(char* filename) {
+partieSauvegardee *chargerPartie(char *filename)
+{
     char file[strlen(filename) + strlen(SAVEDIR)];
     sprintf(file, "%s%s", SAVEDIR, filename);
-    printf("Ouverture du fichier %s\n", filename   );
-    FILE* f = fopen(file, "rb");
+    printf("Ouverture du fichier %s\n", filename);
+    FILE *f = fopen(file, "rb");
 
-    if(f == NULL) return NULL;
+    if (f == NULL)
+        return NULL;
 
-    partieSauvegardee* partie = malloc(sizeof(partieSauvegardee));
+    partieSauvegardee *partie = malloc(sizeof(partieSauvegardee));
 
     fread(&(partie->nbCoups), sizeof(int), 1, f);
 
@@ -71,14 +77,17 @@ partieSauvegardee* chargerPartie(char* filename) {
     return partie;
 }
 
-char* listerSauvegardes(char* filtreNom) {
-    DIR* d = opendir(SAVEDIR);
-    struct dirent* fichier = readdir(d);
-    char* buffer = malloc(sizeof(char) * 1024);
+char *listerSauvegardes(char *filtreNom)
+{
+    DIR *d = opendir(SAVEDIR);
+    struct dirent *fichier = readdir(d);
+    char *buffer = malloc(sizeof(char) * 1024);
 
     // parcours des fichiers du dossier
-    while (fichier != NULL) {
-        if (strstr(fichier->d_name, FILE_EXTENSION) != NULL && strstr(fichier->d_name, filtreNom) != NULL) {
+    while (fichier != NULL)
+    {
+        if (strstr(fichier->d_name, FILE_EXTENSION) != NULL && strstr(fichier->d_name, filtreNom) != NULL)
+        {
             strcat(buffer, fichier->d_name);
             strcat(buffer, ",");
         }

@@ -26,3 +26,18 @@ Client *rechercherClientParNom(elementListeClient *liste, char *nom)
     }
     return NULL;
 }
+
+void clearListeClient(elementListeClient *liste, int supprimerClient)
+{
+    elementListeClient *ptr = liste;
+    while (ptr != NULL)
+    {
+        elementListeClient *supprimer = ptr;
+        ptr = ptr->suivant;
+        if (supprimerClient == 1)
+        {
+            free(supprimer->client);
+        }
+        free(supprimer);
+    }
+}

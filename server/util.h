@@ -5,6 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int tokeniserChaineDeCaracteres(char* buffer, char delimiter, char*** tokens);
+int tokeniserChaineDeCaracteres(char *buffer, char delimiter, char ***tokens);
 
 #endif /* guard*/

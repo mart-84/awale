@@ -27,7 +27,9 @@ elementListeMatch *supprimerMatch(elementListeMatch *liste, MatchAwale *match, i
     {
         elementListeMatch *ptr = liste->suivant;
         if (supprimerMatch == 1)
+        {
             free(liste->match);
+        }
         free(liste);
         return ptr;
     }
@@ -39,7 +41,10 @@ elementListeMatch *supprimerMatch(elementListeMatch *liste, MatchAwale *match, i
             elementListeMatch *supprimer = ptr->suivant;
             ptr->suivant = supprimer->suivant;
             if (supprimerMatch == 1)
+            {
+                clearListeClient(supprimer->match->spectateurs, 0);
                 free(supprimer->match);
+            }
             free(supprimer);
             return liste;
         }

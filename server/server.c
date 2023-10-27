@@ -135,7 +135,7 @@ static void app(void)
                   strncat(buffer, c->name, BUF_SIZE - strlen(buffer) - 1);
                   strncat(buffer, " s'est reconnecté. Le match reprend !\n", BUF_SIZE - strlen(buffer) - 1);
                   write_client(adversaire->sock, buffer);
-                  
+
                   // envoyer le plateau aux deux joueurs
                   buffer[0] = 0;
                   sprintBoard(match->partie, buffer, match->joueur1->name, match->joueur2->name);
@@ -210,15 +210,16 @@ static void app(void)
                }
                else if (buffer[0] == '/')
                {
-                  char *commande = strtok(buffer, " \n");
+                  // char *commande = strtok(buffer, " \n");
                   char **parametres = NULL;
                   int nbParams = tokeniserChaineDeCaracteres(buffer, ' ', &parametres);
-                  
-                  if (nbParams == 0) {
+
+                  if (nbParams == 0)
+                  {
                      continue;
                   }
 
-                  char* commande = parametres[0];
+                  char *commande = parametres[0];
 
                   printf("client %s : %s\n", client->name, buffer);
                   if (strcmp(commande, "/help") == 0)
@@ -400,11 +401,17 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/chat") == 0)
                   {
-                     char *message = parametres[1];
-                     if (message == NULL)
+                     if (nbParams < 2)
                      {
                         write_client(client->sock, "Veuillez entrer un message\n");
                         continue;
+                     }
+                     char message[BUF_SIZE];
+                     message[0] = 0;
+                     for (int i = 1; i < nbParams; i++)
+                     {
+                        strncat(message, parametres[i], BUF_SIZE - strlen(message) - 1);
+                        strncat(message, " ", BUF_SIZE - strlen(message) - 1);
                      }
                      send_message_to_all_clients(listeClients, *client, message, 0);
                   }
@@ -428,16 +435,18 @@ static void app(void)
                         write_client(client->sock, "Ce joueur n'est pas connecté\n");
                         continue;
                      }
-                     char *debutMsg = buffer + 5 + strlen(pseudo) + 1;
-                     int lenMsg = strlen(debutMsg);
-                     char *message = malloc(sizeof(char) * lenMsg);
-                     strncpy(message, buffer + 5 + strlen(pseudo) + 1, lenMsg);
+                     char message[BUF_SIZE];
+                     message[0] = 0;
+                     for (int i = 2; i < nbParams; i++)
+                     {
+                        strncat(message, parametres[i], BUF_SIZE - strlen(message) - 1);
+                        strncat(message, " ", BUF_SIZE - strlen(message) - 1);
+                     }
                      buffer[0] = 0;
                      strncat(buffer, "Message de ", BUF_SIZE - strlen(buffer) - 1);
                      strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
                      strncat(buffer, " : ", BUF_SIZE - strlen(buffer) - 1);
                      strncat(buffer, message, BUF_SIZE - strlen(buffer) - 1);
-                     free(message);
                      write_client(c->sock, buffer);
                   }
                   else if (strcmp(commande, "/refuse") == 0)
@@ -483,14 +492,20 @@ static void app(void)
                   else if (strcmp(commande, "/setbio") == 0)
                   {
                      // ajouter tous ce qui suit la commande dans la bio du joueur
-                     char *bio = strtok(NULL, "\n");
-                     if (bio == NULL)
+                     if (nbParams < 2)
                      {
                         write_client(client->sock, "Veuillez entrer une bio\n");
                         continue;
                      }
-                     client->bio = malloc(sizeof(char) * strlen(bio));
-                     strncpy(client->bio, bio, strlen(bio));
+                     char message[BUF_SIZE];
+                     message[0] = 0;
+                     for (int i = 1; i < nbParams; i++)
+                     {
+                        strncat(message, parametres[i], BUF_SIZE - strlen(message) - 1);
+                        strncat(message, " ", BUF_SIZE - strlen(message) - 1);
+                     }
+                     client->bio = malloc(sizeof(char) * strlen(message));
+                     strncpy(client->bio, message, strlen(message));
                      buffer[0] = 0;
                      strncat(buffer, "Votre bio a été mise à jour\n", BUF_SIZE - strlen(buffer) - 1);
                      write_client(client->sock, buffer);
@@ -568,18 +583,38 @@ static void app(void)
                      strncat(buffer, ". Vous avez perdu !\n", BUF_SIZE - strlen(buffer) - 1);
                      write_client(client->sock, buffer);
 
+                     // Envoyer le résultat du match aux spectateurs
+                     elementListeClient *spectateurs = match->spectateurs;
+                     buffer[0] = 0;
+                     strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " a abandonné le match contre ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, adversaire->name, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, ". ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, adversaire->name, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " remporte le match !\n", BUF_SIZE - strlen(buffer) - 1);
+                     while (spectateurs != NULL)
+                     {
+                        write_client(spectateurs->client->sock, buffer);
+                        spectateurs = spectateurs->suivant;
+                     }
+
                      // supprimer le match de la liste des matchs
                      listeMatchs = supprimerMatch(listeMatchs, match, 1);
                   }
                   else if (strcmp(commande, "/listematchs") == 0)
                   {
-                     elementListeMatch* matchs = listeMatchs;
+                     elementListeMatch *matchs = listeMatchs;
 
-                     if (matchs == NULL) {
+                     if (matchs == NULL)
+                     {
                         strcpy(buffer, "Aucun match en cours\n");
-                     } else {
+                     }
+                     else
+                     {
                         strcpy(buffer, "Liste des matchs :\n");
-                        while(matchs != NULL) {
+                        while (matchs != NULL)
+                        {
                            strncat(buffer, " - ", BUF_SIZE - strlen(buffer) - 1);
                            strncat(buffer, matchs->match->joueur1->name, BUF_SIZE - strlen(buffer) - 1);
                            strncat(buffer, " contre ", BUF_SIZE - strlen(buffer) - 1);
@@ -590,18 +625,44 @@ static void app(void)
                      }
 
                      write_client(client->sock, buffer);
-                  } else if (strcmp(commande, "/spec") == 0) {
-                     char** parametres = NULL;
-                     int nbParams = tokeniserChaineDeCaracteres(buffer, ' ', &parametres);
-
-                     printf("%d\n", nbParams);
-
-                     if (nbParams != 3) {
+                  }
+                  else if (strcmp(commande, "/spec") == 0)
+                  {
+                     if (nbParams < 3)
+                     {
                         write_client(client->sock, "Usage invalide de la commande. Tapez /spec <joueur1> <joueur2>");
                         continue;
                      }
 
-                     printf("%s %s\n", parametres[1], parametres[2]);
+                     char *joueur1 = parametres[1];
+                     Client *c1 = rechercherClientParNom(listeClients, joueur1);
+                     if (c1 == NULL)
+                     {
+                        write_client(client->sock, "Le joueur 1 n'existe pas\n");
+                        continue;
+                     }
+
+                     char *joueur2 = parametres[2];
+                     Client *c2 = rechercherClientParNom(listeClients, joueur2);
+                     if (c2 == NULL)
+                     {
+                        write_client(client->sock, "Le joueur 2 n'existe pas\n");
+                        continue;
+                     }
+
+                     MatchAwale *match = rechercherMatchClients(listeMatchs, c1, c2);
+                     if (match == NULL)
+                     {
+                        write_client(client->sock, "Aucun match en cours entre ces deux joueurs\n");
+                        continue;
+                     }
+
+                     // Ajouter le joueur à la liste des spectateurs
+                     match->spectateurs = ajouterClient(match->spectateurs, client);
+
+                     write_client(client->sock, "Vous êtes maintenant spectateur de ce match\n");
+                     sprintBoard(match->partie, buffer, match->joueur1->name, match->joueur2->name);
+                     write_client(client->sock, buffer);
                   }
                   else if (strcmp(commande, "/listeinvitations") == 0)
                   {
@@ -622,7 +683,9 @@ static void app(void)
                            strncat(buffer, " - ", BUF_SIZE - strlen(buffer) - 1);
                            strncat(buffer, invit->inviteur->name, BUF_SIZE - strlen(buffer) - 1);
                            strncat(buffer, " vous a invité\n", BUF_SIZE - strlen(buffer) - 1);
-                        } else {
+                        }
+                        else
+                        {
                            strncat(buffer, " - Vous avez invité ", BUF_SIZE - strlen(buffer) - 1);
                            strncat(buffer, invit->invite->name, BUF_SIZE - strlen(buffer) - 1);
                            strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
@@ -679,6 +742,14 @@ static void app(void)
                      write_client(match->joueur1->sock, buffer);
                      write_client(match->joueur2->sock, buffer);
 
+                     // envoyer la partie à tous les spectateurs
+                     elementListeClient *spectateurs = match->spectateurs;
+                     while (spectateurs != NULL)
+                     {
+                        write_client(spectateurs->client->sock, buffer);
+                        spectateurs = spectateurs->suivant;
+                     }
+
                      if (finDePartie(match->partie) != PAS_DE_GAGNANT)
                      {
                         // Envoyer le score aux deux joueurs
@@ -698,6 +769,12 @@ static void app(void)
                         strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
                         write_client(match->joueur1->sock, buffer);
                         write_client(match->joueur2->sock, buffer);
+                        spectateurs = match->spectateurs;
+                        while (spectateurs != NULL)
+                        {
+                           write_client(spectateurs->client->sock, buffer);
+                           spectateurs = spectateurs->suivant;
+                        }
 
                         // supprimer le match de la liste des matchs
                         listeMatchs = supprimerMatch(listeMatchs, match, 1);

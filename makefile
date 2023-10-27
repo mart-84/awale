@@ -1,5 +1,5 @@
 GCC=gcc
-CFLAGS=-Wall -c -g
+CFLAGS=-Wall -Werror -c -g
 LDFLAGS=-Wall -Werror -L libs/lib -I libs/include -lmpg123 -lao
 LIBS=-L libs/lib -I libs/include -lmpg123 -lao -lpthread
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d

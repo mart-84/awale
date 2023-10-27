@@ -68,7 +68,7 @@ void *playMusic(void *param)
 
    /* decode and play */
    while (mpg123_read(mh, buffer_mp3, buffer_size, &done) == MPG123_OK)
-      ao_play(dev, buffer_mp3, done);
+      ao_play(dev, (char *)buffer_mp3, done);
 
    /* clean up */
    free(buffer_mp3);

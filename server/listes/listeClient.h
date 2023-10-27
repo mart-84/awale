@@ -13,4 +13,7 @@ elementListeClient* ajouterClient(elementListeClient* liste, Client* client);
 
 Client* rechercherClientParNom(elementListeClient* liste, char* nom);
 
+// supprimerClient = 1 : supprime le client de la liste
+void clearListeClient(elementListeClient* liste, int supprimerClient);
+
 #endif /* guard */
