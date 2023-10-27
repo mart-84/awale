@@ -7,6 +7,7 @@
 #include "client.h"
 #include "listes/listeClient.h"
 #include "listes/listeMatch.h"
+#include "listes/listeInvitation.h"
 #include "match.h"
 #include "awale/awale.h"
 
@@ -40,10 +41,11 @@ static void app(void)
    int max = sock;
    elementListeClient *listeClients = NULL;
    elementListeMatch *listeMatchs = NULL;
+   elementListeInvitation *listeInvitations = NULL;
 
    fd_set rdfs;
 
-   printf("Waiting for connections...\n");
+   printf("En attente de connexion...\n");
 
    while (1)
    {
@@ -110,11 +112,12 @@ static void app(void)
             else
             {
                // TODO : si une partie était en cours, lui proposer de la reprendre
-               
+
                printf("Client %s reconnected\n", buffer);
                c->isConnected = 1;
                c->sock = clientSock;
-               clientSock = c->sock;
+               actual++;
+               send_welcome_message(c);
             }
             continue;
          }
@@ -131,20 +134,7 @@ static void app(void)
          listeClients = ajouterClient(listeClients, c);
          actual++;
          printf("New client connected as %s\n", buffer);
-         buffer[0] = 0;
-         strcat(buffer, "=============================\n");
-         strcat(buffer, "    ___                 __   \n");
-         strcat(buffer, "   /   |_      ______ _/ /__ \n");
-         strcat(buffer, "  / /| | | /| / / __ `/ / _ \\\n");
-         strcat(buffer, " / ___ | |/ |/ / /_/ / /  __/\n");
-         strcat(buffer, "/_/  |_|__/|__/\\__,_/_/\\___/ \n");
-         strcat(buffer, "=============================\n\n");
-         strcat(buffer, "Bienvenue ");
-         strcat(buffer, c->name);
-         strcat(buffer, " sur le serveur !\n");
-         strcat(buffer, "Tapez /help pour afficher la liste des commandes disponibles\n");
-         write_client(clientSock, buffer);
-
+         send_welcome_message(c);
       }
       else
       {
@@ -228,25 +218,34 @@ static void app(void)
                      }
                      else
                      {
+                        Invitation *invit = rechercherInvitationParClients(listeInvitations, client, c);
+                        if (invit != NULL)
+                        {
+                           if (invit->invite == client)
+                           {
+                              buffer[0] = 0;
+                              strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
+                              strncat(buffer, c->name, BUF_SIZE - strlen(buffer) - 1);
+                              strncat(buffer, " vous a déjà envoyé une invitation. Utilisez la commande /accepte <pseudo> pour commencer le match\n", BUF_SIZE - strlen(buffer) - 1);
+                              write_client(client->sock, buffer);
+                           }
+                           else
+                           {
+                              write_client(client->sock, "Une invitation a déjà été envoyée à ce joueur. Il vient d'être relancé\n");
+                              buffer[0] = 0;
+                              strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
+                              strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
+                              strncat(buffer, " vous relance l'invitation pour son duel !\nUtilisez la commande /accepte <pseudo> pour commencer le match\n", BUF_SIZE - strlen(buffer) - 1);
+                              write_client(c->sock, buffer);
+                           }
+                           continue;
+                        }
+
                         // Si un match existe déjà entre les deux joueurs
                         MatchAwale *match = rechercherMatchClients(listeMatchs, client, c);
                         if (match != NULL)
                         {
-                           // Si l'invitation est en attente
-                           if (match->etat == ATTENTE)
-                           {
-                              write_client(client->sock, "Une invitation a déjà été envoyée à ce joueur. Il vient d'être relancé\n");
-
-                              buffer[0] = 0;
-                              strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
-                              strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
-                              strncat(buffer, " vous relance l'invitation pour son duel !\n", BUF_SIZE - strlen(buffer) - 1);
-                              write_client(c->sock, buffer);
-                           }
-                           else // Le match est en cours
-                           {
-                              write_client(client->sock, "Un match est déjà en cours avec ce joueur\n");
-                           }
+                           write_client(client->sock, "Un match est déjà en cours avec ce joueur\n");
                            continue;
                         }
 
@@ -264,25 +263,22 @@ static void app(void)
                         strncat(buffer, " vous défie dans un duel !\nUtilisez la commande /accepte <pseudo> pour commencer le match", BUF_SIZE - strlen(buffer) - 1);
                         write_client(c->sock, buffer);
 
-                        // Création du match et ajout à la liste des matchs
-                        partie *p = malloc(sizeof(partie));
-                        init(p);
-                        MatchAwale *m = malloc(sizeof(MatchAwale));
-                        m->joueur1 = client;
-                        m->joueur2 = c;
-                        m->partie = p;
-                        p->plateau[0] = 1;
-                        p->plateau[5] = 1;
-                        p->plateau[6] = 1;
-                        p->plateau[11] = 1;
-                        p->scores[0] = 24;
-                        p->scores[1] = 24;
-                        m->etat = ATTENTE;
-                        listeMatchs = ajouterMatch(listeMatchs, m);
+                        // Création de l'invitation
+                        Invitation *invitation = malloc(sizeof(Invitation));
+                        invitation->inviteur = client;
+                        invitation->invite = c;
+                        listeInvitations = ajouterInvitation(listeInvitations, invitation);
                      }
                   }
                   else if (strcmp(commande, "/accepte") == 0)
                   {
+                     MatchAwale *match = rechercherMatchClient(listeMatchs, client);
+                     if (match != NULL)
+                     {
+                        write_client(client->sock, "Vous êtes déjà en match\n");
+                        continue;
+                     }
+
                      char *adversaireNom = strtok(NULL, " \n");
                      Client *adversaire = rechercherClientParNom(listeClients, adversaireNom);
                      if (adversaire == NULL) // client inexistant
@@ -291,46 +287,37 @@ static void app(void)
                         continue;
                      }
 
-                     MatchAwale *match = rechercherMatchClients(listeMatchs, client, adversaire);
-                     if (match == NULL) /// aucun match en attente
+                     Invitation *invit = rechercherInvitationParClients(listeInvitations, adversaire, client);
+                     if (invit == NULL) // aucune invitation en attente
                      {
                         write_client(client->sock, "Aucune invitation n'a été envoyée à ce joueur\n");
                         continue;
                      }
 
-                     if (match->etat != ATTENTE) // match déjà en cours
+                     if (invit->invite != client) // l'invitation n'est pas pour ce joueur
                      {
-                        write_client(client->sock, "Aucune invitation n'est en attente avec ce joueur\n");
+                        write_client(client->sock, "Cette invitation ne vous est pas destinée\n");
                         continue;
                      }
 
                      // Vérifier si l'adversaire est en match avec un autre joueur
                      // Dans ce cas, on annule l'invitation et on ne lance pas de nouveau match
-                     elementListeMatch *ptr = rechercherMatchClient(listeMatchs, adversaire);
-                     if (ptr != NULL)
+                     match = rechercherMatchClient(listeMatchs, adversaire);
+                     if (match != NULL)
                      {
-                        elementListeMatch *ptr2 = ptr;
-                        int adversaireEnMatch = 0;
-                        while (ptr2 != NULL)
-                        {
-                           if (ptr2->match->etat == EN_COURS)
-                           {
-                              listeMatchs = supprimerMatch(listeMatchs, match, 1);
-                              write_client(client->sock, "Votre adversaire est déjà en match. L'invitation a été annulée\n");
-                              adversaireEnMatch = 1;
-                              break;
-                           }
-                           ptr2 = ptr2->suivant;
-                        }
-                        if (adversaireEnMatch)
-                        {
-                           clearListeMatch(ptr);
-                           continue;
-                        }
+                        write_client(client->sock, "Votre adversaire est déjà en match. Veuillez réessayer dans quelques instants.\n");
+                        continue;
                      }
-                     clearListeMatch(ptr);
 
-                     match->etat = EN_COURS;
+                     // Transformer l'invitation en match
+                     partie *p = malloc(sizeof(partie));
+                     init(p);
+                     match = malloc(sizeof(MatchAwale));
+                     match->joueur1 = invit->inviteur;
+                     match->joueur2 = invit->invite;
+                     match->partie = p;
+                     listeMatchs = ajouterMatch(listeMatchs, match);
+                     listeInvitations = supprimerInvitation(listeInvitations, invit);
 
                      // Envoie du message au joueur qui lance le duel
                      buffer[0] = 0;
@@ -388,6 +375,46 @@ static void app(void)
                      free(message);
                      write_client(c->sock, buffer);
                   }
+                  else if (strcmp(commande, "/refuse") == 0)
+                  {
+                     char *adversaireNom = strtok(NULL, " \n");
+                     Client *adversaire = rechercherClientParNom(listeClients, adversaireNom);
+                     if (adversaire == NULL) // client inexistant
+                     {
+                        write_client(client->sock, "Ce joueur n'existe pas\n");
+                        continue;
+                     }
+
+                     Invitation *invit = rechercherInvitationParClients(listeInvitations, adversaire, client);
+                     if (invit == NULL) // aucune invitation en attente
+                     {
+                        write_client(client->sock, "Aucune invitation n'a été envoyée à ce joueur\n");
+                        continue;
+                     }
+
+                     if (invit->invite != client) // l'invitation n'est pas pour ce joueur
+                     {
+                        write_client(client->sock, "Cette invitation ne vous est pas destinée\n");
+                        continue;
+                     }
+
+                     // Supprimer l'invitation
+                     listeInvitations = supprimerInvitation(listeInvitations, invit);
+
+                     // Envoie du message au joueur qui lance le duel
+                     buffer[0] = 0;
+                     strncat(buffer, "Le joueur ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, client->name, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " a refusé votre invitation !\n", BUF_SIZE - strlen(buffer) - 1);
+                     write_client(adversaire->sock, buffer);
+
+                     // Envoie du message au joueur qui reçoit le duel
+                     buffer[0] = 0;
+                     strncat(buffer, "Vous avez refusé l'invitation de ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, adversaire->name, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
+                     write_client(client->sock, buffer);
+                  }
                   else
                   {
                      write_client(client->sock, "Commande inconnue\n");
@@ -398,32 +425,12 @@ static void app(void)
                   printf("client %s : %s\n", client->name, buffer);
                   // trouver la partie associée au joueur
                   //    Si pas de partie trouvée, envoyer un message d'erreur
-                  elementListeMatch *listeMatchsJoueur = rechercherMatchClient(listeMatchs, client);
-                  MatchAwale *match = NULL;
-                  if (listeMatchsJoueur == NULL)
+                  MatchAwale *match = rechercherMatchClient(listeMatchs, client);
+                  if (match == NULL)
                   {
                      write_client(client->sock, "Aucun match en cours\n");
                      continue;
                   }
-                  else
-                  {
-                     elementListeMatch *ptr = listeMatchsJoueur;
-                     while (ptr != NULL)
-                     {
-                        if (ptr->match->etat == EN_COURS)
-                        {
-                           match = ptr->match;
-                           break;
-                        }
-                        ptr = ptr->suivant;
-                     }
-                     if (ptr == NULL)
-                     {
-                        write_client(client->sock, "Aucun match en cours\n");
-                        continue;
-                     }
-                  }
-                  clearListeMatch(listeMatchsJoueur);
 
                   // récuper le joueur courant dans la partie
                   char *joueurCourant = match->partie->joueurCourant == 0 ? match->joueur1->name : match->joueur2->name;
@@ -447,7 +454,9 @@ static void app(void)
                   {
                      write_client(client->sock, "Coup injouable\n");
                      continue;
-                  } else {
+                  }
+                  else
+                  {
                      buffer[0] = 0;
                      sprintBoard(match->partie, buffer, match->joueur1->name, match->joueur2->name);
                      write_client(match->joueur1->sock, buffer);
@@ -475,7 +484,6 @@ static void app(void)
 
                         // supprimer le match de la liste des matchs
                         listeMatchs = supprimerMatch(listeMatchs, match, 1);
-
                      }
                   }
                }
@@ -486,6 +494,24 @@ static void app(void)
 
    clear_clients(listeClients, actual);
    end_connection(sock);
+}
+
+void send_welcome_message(Client *client)
+{
+   char buffer[BUF_SIZE];
+   buffer[0] = 0;
+   strcat(buffer, "=============================\n");
+   strcat(buffer, "    ___                 __   \n");
+   strcat(buffer, "   /   |_      ______ _/ /__ \n");
+   strcat(buffer, "  / /| | | /| / / __ `/ / _ \\\n");
+   strcat(buffer, " / ___ | |/ |/ / /_/ / /  __/\n");
+   strcat(buffer, "/_/  |_|__/|__/\\__,_/_/\\___/ \n");
+   strcat(buffer, "=============================\n\n");
+   strcat(buffer, "Bienvenue ");
+   strcat(buffer, client->name);
+   strcat(buffer, " sur le serveur !\n");
+   strcat(buffer, "Tapez /help pour afficher la liste des commandes disponibles\n");
+   write_client(client->sock, buffer);
 }
 
 static void clear_clients(elementListeClient *clients, int actual)

@@ -89,6 +89,6 @@ char* listerSauvegardes(char* filtreNom) {
     return buffer;
 }
 
-int main() {
-    printf("%s\n", listerSauvegardes("pierre"));
-}
+// int main() {
+//     printf("%s\n", listerSauvegardes("pierre"));
+// }

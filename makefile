@@ -12,7 +12,7 @@ SERVER=$(BINDIR)/server
 TARGET=$(CLIENT) $(SERVER)
 
 CLIENT_SRCS=client/client.c
-SERVER_SRCS=server/server.c server/listes/listeClient.c server/listes/listeMatch.c server/awale/awale.c server/sauvegarde.c
+SERVER_SRCS=server/server.c server/listes/listeClient.c server/listes/listeMatch.c server/awale/awale.c server/sauvegarde.c server/listes/listeInvitation.c
 
 SRCS=$(CLIENT_SRCS) $(SERVER_SRCS)
 OBJS=$(SRCS:%.c=$(OBJDIR)/%.o)

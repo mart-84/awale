@@ -8,12 +8,25 @@
 - A la déconnexion, si les deux joueurs d'une partie sont déconnectés : supprimer le match
 
 - Vérifier le nombre de paramètres pour les commandes
-- Pour accepter une invitation, vérifier aussi que le joueur n'est pas déjà dans une partie
-- Refuser une partie
 
-- Mettre à jour le /help
+- Voir la liste de ses invitations
+- Refuser une partie /refuse
 
-- Refactoriser le code (adieu la fonction de 500 lignes o/)
+- Mettre à jour le /help et le Readme
+
+- Refactoriser le code (adieu la fonction de 150000 lignes o/)
+
+- Ajouter de la musique chez les clients, avec une commande pour la lancer et une commande pour l'arrêter -> dans un autre thread
+
+- Ajouter une commande pour abandonner une partie /giveup
+Le joueur qui la fait perd la partie
+
+- Utiliser les flèches pour remonter dans les commandes
+
+
+# Installation
+
+make
 
 # Commandes
 Les commandes commencent par le préfixe /

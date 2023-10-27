@@ -62,19 +62,18 @@ MatchAwale *rechercherMatchClients(elementListeMatch *liste, Client *c1, Client 
     return NULL;
 }
 
-elementListeMatch *rechercherMatchClient(elementListeMatch *liste, Client *c1)
+MatchAwale *rechercherMatchClient(elementListeMatch *liste, Client *c1)
 {
     elementListeMatch *ptr = liste;
-    elementListeMatch *matchs = NULL;
     while (ptr != NULL)
     {
         if (ptr->match->joueur1 == c1 || ptr->match->joueur2 == c1)
         {
-            matchs = ajouterMatch(matchs, ptr->match);
+            return ptr->match;
         }
         ptr = ptr->suivant;
     }
-    return matchs;
+    return NULL;
 }
 
 void clearListeMatch(elementListeMatch *liste)

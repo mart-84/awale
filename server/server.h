@@ -41,5 +41,6 @@ static void write_client(SOCKET sock, const char *buffer);
 static void send_message_to_all_clients(elementListeClient *clients, Client sender, const char *buffer, char from_server);
 static void remove_client(elementListeClient *clients, Client client);
 static void clear_clients(elementListeClient *clients, int actual);
+void send_welcome_message(Client *client);
 
 #endif /* guard */

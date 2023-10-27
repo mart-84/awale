@@ -5,20 +5,10 @@
 
 elementListeClient *ajouterClient(elementListeClient *liste, Client *client)
 {
-    elementListeClient *nouveauClient = (elementListeClient *)malloc(sizeof(elementListeClient));
-    nouveauClient->client = client;
-    nouveauClient->suivant = NULL;
-
-    if (liste == NULL)
-    {
-        return nouveauClient;
-    }
-
-    elementListeClient *ptr = liste;
-    while (ptr->suivant != NULL)
-        ptr = ptr->suivant;
-    ptr->suivant = nouveauClient;
-    return liste;
+    elementListeClient *nouveau = (elementListeClient *)malloc(sizeof(elementListeClient));
+    nouveau->client = client;
+    nouveau->suivant = liste;
+    return nouveau;
 }
 
 Client *rechercherClientParNom(elementListeClient *liste, char *nom)

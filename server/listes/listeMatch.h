@@ -18,8 +18,8 @@ elementListeMatch *supprimerMatch(elementListeMatch *liste, MatchAwale *match, i
 // Renvoie un seul match, car on ne peut avoir qu'un seul match entre deux clients, que ce soit en attente ou en cours
 MatchAwale *rechercherMatchClients(elementListeMatch *liste, Client *c1, Client *c2);
 
-// Renvoie tous les matchs d'un client, car un client peut avoir des invitations de plusieurs joueurs
-elementListeMatch *rechercherMatchClient(elementListeMatch *liste, Client *c1);
+// Renvoie un seul match, car un joueur ne peut avoir qu'un seul match en cours
+MatchAwale *rechercherMatchClient(elementListeMatch *liste, Client *c1);
 
 void clearListeMatch(elementListeMatch *liste);
 
