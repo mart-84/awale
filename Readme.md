@@ -1,7 +1,5 @@
 
 # Todos
-- Affichage et édition des biographies
-
 - Reconnexion :
     - Proposer de reprendre la partie en cours (uniquement si l'autre joueur est toujours connecté)
     - Si le joueur refuse de reprendre : il perd
@@ -10,7 +8,6 @@
 - Vérifier le nombre de paramètres pour les commandes
 
 - Voir la liste de ses invitations
-- Refuser une partie /refuse
 
 - Mettre à jour le /help et le Readme
 
@@ -20,6 +17,10 @@
 
 - Ajouter une commande pour abandonner une partie /giveup
 Le joueur qui la fait perd la partie
+
+- Observateur : pouvoir spec une game, il faut d'abord pouvoir afficher la liste des parties et en choisir
+    - /listeparties
+    - /spec j1 j2
 
 - Utiliser les flèches pour remonter dans les commandes
 

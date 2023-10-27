@@ -13,6 +13,8 @@ elementListeClient *ajouterClient(elementListeClient *liste, Client *client)
 
 Client *rechercherClientParNom(elementListeClient *liste, char *nom)
 {
+    if (nom == NULL)
+        return NULL;
     elementListeClient *ptr = liste;
     while (ptr != NULL)
     {

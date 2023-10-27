@@ -279,8 +279,11 @@ static void app(void)
                         continue;
                      }
 
+                     printf("aaaaaaaaaa\n");
                      char *adversaireNom = strtok(NULL, " \n");
+                     printf("bbbbbbbbbb\n");
                      Client *adversaire = rechercherClientParNom(listeClients, adversaireNom);
+                     printf("cccccccccc\n");
                      if (adversaire == NULL) // client inexistant
                      {
                         write_client(client->sock, "Ce joueur n'existe pas\n");
@@ -415,6 +418,62 @@ static void app(void)
                      strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
                      write_client(client->sock, buffer);
                   }
+                  else if (strcmp(commande, "/setbio") == 0)
+                  {
+                     // ajouter tous ce qui suit la commande dans la bio du joueur
+                     char *bio = strtok(NULL, "\n");
+                     if (bio == NULL)
+                     {
+                        write_client(client->sock, "Veuillez entrer une bio\n");
+                        continue;
+                     }
+                     client->bio = malloc(sizeof(char) * strlen(bio));
+                     strncpy(client->bio, bio, strlen(bio));
+                     buffer[0] = 0;
+                     strncat(buffer, "Votre bio a été mise à jour\n", BUF_SIZE - strlen(buffer) - 1);
+                     write_client(client->sock, buffer);
+                  }
+                  else if (strcmp(commande, "/bio") == 0)
+                  {
+                     char *pseudo = strtok(NULL, " \n");
+                     if (pseudo == NULL)
+                     {
+                        if (client->bio == NULL)
+                        {
+                           write_client(client->sock, "Vous n'avez pas de bio. Utilisez la commande /setbio pour en définir une\n");
+                        }
+                        else
+                        {
+                           buffer[0] = 0;
+                           strncat(buffer, "Votre bio : ", BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, client->bio, BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
+                           write_client(client->sock, buffer);
+                        }
+                     }
+                     else
+                     {
+                        Client *c = rechercherClientParNom(listeClients, pseudo);
+                        if (c == NULL)
+                        {
+                           write_client(client->sock, "Ce joueur n'existe pas\n");
+                        }
+                        else if (c->bio == NULL)
+                        {
+                           write_client(client->sock, "Ce joueur n'a pas de bio\n");
+                        }
+                        else
+                        {
+                           buffer[0] = 0;
+                           strncat(buffer, "Bio de ", BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, c->name, BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, " : ", BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, c->bio, BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
+                           write_client(client->sock, buffer);
+                        }
+                     }
+                  }
                   else
                   {
                      write_client(client->sock, "Commande inconnue\n");
@@ -501,11 +560,11 @@ void send_welcome_message(Client *client)
    char buffer[BUF_SIZE];
    buffer[0] = 0;
    strcat(buffer, "=============================\n");
-   strcat(buffer, "    ___                 __   \n");
+   strcat(buffer, "\033[0;31m\033[1m    ___                 __   \n");
    strcat(buffer, "   /   |_      ______ _/ /__ \n");
    strcat(buffer, "  / /| | | /| / / __ `/ / _ \\\n");
    strcat(buffer, " / ___ | |/ |/ / /_/ / /  __/\n");
-   strcat(buffer, "/_/  |_|__/|__/\\__,_/_/\\___/ \n");
+   strcat(buffer, "/_/  |_|__/|__/\\__,_/_/\\___/ \033[0m\n");
    strcat(buffer, "=============================\n\n");
    strcat(buffer, "Bienvenue ");
    strcat(buffer, client->name);
