@@ -322,11 +322,8 @@ static void app(void)
                         continue;
                      }
 
-                     printf("aaaaaaaaaa\n");
                      char *adversaireNom = strtok(NULL, " \n");
-                     printf("bbbbbbbbbb\n");
                      Client *adversaire = rechercherClientParNom(listeClients, adversaireNom);
-                     printf("cccccccccc\n");
                      if (adversaire == NULL) // client inexistant
                      {
                         write_client(client->sock, "Ce joueur n'existe pas\n");
@@ -556,6 +553,26 @@ static void app(void)
 
                      // supprimer le match de la liste des matchs
                      listeMatchs = supprimerMatch(listeMatchs, match, 1);
+                  }
+                  else if (strcmp(commande, "/listematchs") == 0)
+                  {
+                     elementListeMatch* matchs = listeMatchs;
+
+                     if (matchs == NULL) {
+                        strcpy(buffer, "Aucun match en cours\n");
+                     } else {
+                        strcpy(buffer, "Liste des matchs :\n");
+                        while(matchs != NULL) {
+                           strncat(buffer, " - ", BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, matchs->match->joueur1->name, BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, " contre ", BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, matchs->match->joueur2->name, BUF_SIZE - strlen(buffer) - 1);
+                           strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
+                           matchs = matchs->suivant;
+                        }
+                     }
+
+                     write_client(client->sock, buffer);
                   }
                   else
                   {
