@@ -11,14 +11,14 @@ int tokeniserChaineDeCaracteres(char* buffer, char delimiter, char*** tokens) {
 
     while(i <= taille) {
         if ((buffer[i] == delimiter || buffer[i] == '\0') && debut != -1) { // fin du token
-            debut = -1;
-
-            if ((i - debut) > 1) {
+            if ((i - debut) > 0) {
                 token[i - debut] = '\0';
                 *tokens = (char**) realloc(*tokens, sizeof(char*) * (compteur + 1));
                 (*tokens)[compteur] = token;
                 compteur++;
             }
+
+            debut = -1;
         } else if (debut == -1) { // debut du token
             token = malloc(sizeof(char) * taille);
             token[0] = buffer[i];

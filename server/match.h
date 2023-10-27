@@ -3,11 +3,13 @@
 
 #include "awale/awale.h"
 #include "client.h"
+#include "listes/listeClient.h"
 
 typedef struct {
     Client *joueur1; // lance le duel
     Client *joueur2; // accepte le duel
     partie *partie;
+    elementListeClient *spectateurs;
 } MatchAwale;
 
 #endif /* guard */

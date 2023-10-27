@@ -30,6 +30,7 @@ typedef struct in_addr IN_ADDR;
 #include "includes.h"
 #include "client.h"
 #include "listes/listeClient.h"
+#include "util.h"
 
 static void init_server(void);
 static void end(void);

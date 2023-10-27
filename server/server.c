@@ -211,6 +211,15 @@ static void app(void)
                else if (buffer[0] == '/')
                {
                   char *commande = strtok(buffer, " \n");
+                  char **parametres = NULL;
+                  int nbParams = tokeniserChaineDeCaracteres(buffer, ' ', &parametres);
+                  
+                  if (nbParams == 0) {
+                     continue;
+                  }
+
+                  char* commande = parametres[0];
+
                   printf("client %s : %s\n", client->name, buffer);
                   if (strcmp(commande, "/help") == 0)
                   {
@@ -245,7 +254,7 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/duel") == 0)
                   {
-                     char *adversaire = strtok(NULL, " \n");
+                     char *adversaire = parametres[1];
                      Client *c = rechercherClientParNom(listeClients, adversaire);
                      if (c == NULL)
                      {
@@ -322,7 +331,7 @@ static void app(void)
                         continue;
                      }
 
-                     char *adversaireNom = strtok(NULL, " \n");
+                     char *adversaireNom = parametres[1];
                      Client *adversaire = rechercherClientParNom(listeClients, adversaireNom);
                      if (adversaire == NULL) // client inexistant
                      {
@@ -391,7 +400,7 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/chat") == 0)
                   {
-                     char *message = strtok(NULL, "\n");
+                     char *message = parametres[1];
                      if (message == NULL)
                      {
                         write_client(client->sock, "Veuillez entrer un message\n");
@@ -401,7 +410,7 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/msg") == 0)
                   {
-                     char *pseudo = strtok(NULL, " \n");
+                     char *pseudo = parametres[1];
                      // Recherche le joueur avec son pseudo
                      Client *c = rechercherClientParNom(listeClients, pseudo);
                      if (c == NULL)
@@ -433,7 +442,7 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/refuse") == 0)
                   {
-                     char *adversaireNom = strtok(NULL, " \n");
+                     char *adversaireNom = parametres[1];
                      Client *adversaire = rechercherClientParNom(listeClients, adversaireNom);
                      if (adversaire == NULL) // client inexistant
                      {
@@ -488,7 +497,7 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/bio") == 0)
                   {
-                     char *pseudo = strtok(NULL, " \n");
+                     char *pseudo = parametres[1];
                      if (pseudo == NULL)
                      {
                         if (client->bio == NULL)
@@ -581,6 +590,18 @@ static void app(void)
                      }
 
                      write_client(client->sock, buffer);
+                  } else if (strcmp(commande, "/spec") == 0) {
+                     char** parametres = NULL;
+                     int nbParams = tokeniserChaineDeCaracteres(buffer, ' ', &parametres);
+
+                     printf("%d\n", nbParams);
+
+                     if (nbParams != 3) {
+                        write_client(client->sock, "Usage invalide de la commande. Tapez /spec <joueur1> <joueur2>");
+                        continue;
+                     }
+
+                     printf("%s %s\n", parametres[1], parametres[2]);
                   }
                   else if (strcmp(commande, "/listeinvitations") == 0)
                   {
