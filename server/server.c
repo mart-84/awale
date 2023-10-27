@@ -343,7 +343,12 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/chat") == 0)
                   {
-                     char *message = buffer + 6; // 6 est la longueur de la commande + 1 espace
+                     char *message = strtok(NULL, "\n");
+                     if (message == NULL)
+                     {
+                        write_client(client->sock, "Veuillez entrer un message\n");
+                        continue;
+                     }
                      send_message_to_all_clients(listeClients, *client, message, 0);
                   }
                   else if (strcmp(commande, "/msg") == 0)
