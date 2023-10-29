@@ -56,12 +56,12 @@ char *sprintBoard(Partie *p, char *buffer, char *joueur1, char *joueur2)
     if (p->joueurCourant == 0)
     {
         // J2 | plateau : 11 -> 6 | score J2
-        sprintf(line, "| J2 | %d | %d | %d | %d | %d | %d |  %d |\n", p->plateau[11], p->plateau[10], p->plateau[9], p->plateau[8], p->plateau[7], p->plateau[6], p->scores[1]);
+        sprintf(line, "| J2 | %d | %d | %d | %d | %d | %d | %02d |\n", p->plateau[11], p->plateau[10], p->plateau[9], p->plateau[8], p->plateau[7], p->plateau[6], p->scores[1]);
     }
     else
     {
         // J1 | plateau : 5 -> 0 | score J1
-        sprintf(line, "| J1 | %d | %d | %d | %d | %d | %d |  %d |\n", p->plateau[5], p->plateau[4], p->plateau[3], p->plateau[2], p->plateau[1], p->plateau[0], p->scores[0]);
+        sprintf(line, "| J1 | %d | %d | %d | %d | %d | %d | %02d |\n", p->plateau[5], p->plateau[4], p->plateau[3], p->plateau[2], p->plateau[1], p->plateau[0], p->scores[0]);
     }
     strcat(buffer, line);
     strcpy(line, "|    |-----------------------|    |\n");
@@ -69,12 +69,12 @@ char *sprintBoard(Partie *p, char *buffer, char *joueur1, char *joueur2)
     if (p->joueurCourant == 0)
     {
         // score J1 | plateau : 0 -> 5 | J1
-        sprintf(line, "|  %d | %d | %d | %d | %d | %d | %d | J1 |\n", p->scores[0], p->plateau[0], p->plateau[1], p->plateau[2], p->plateau[3], p->plateau[4], p->plateau[5]);
+        sprintf(line, "| %02d | %d | %d | %d | %d | %d | %d | J1 |\n", p->scores[0], p->plateau[0], p->plateau[1], p->plateau[2], p->plateau[3], p->plateau[4], p->plateau[5]);
     }
     else
     {
         // score J2 | plateau : 6 -> 11 | J2
-        sprintf(line, "|  %d | %d | %d | %d | %d | %d | %d | J2 |\n", p->scores[1], p->plateau[6], p->plateau[7], p->plateau[8], p->plateau[9], p->plateau[10], p->plateau[11]);
+        sprintf(line, "| %02d | %d | %d | %d | %d | %d | %d | J2 |\n", p->scores[1], p->plateau[6], p->plateau[7], p->plateau[8], p->plateau[9], p->plateau[10], p->plateau[11]);
     }
     strcat(buffer, line);
     strcpy(line, "+----+-----------------------+----+\n");
