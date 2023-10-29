@@ -1,13 +1,6 @@
 #ifndef SAUVEGARDE_H
 #define SAUVEGARDE_H
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <time.h>
-#include <sys/types.h>
-#include <dirent.h>
-
 #include "includes.h"
 
 typedef struct
@@ -19,18 +12,41 @@ typedef struct
     int premierJoueur;
 } partieSauvegardee;
 
-// initialise une partie avec les joueurs en précisant le joueur courant
+/**
+ * Initialise une sauvegarde avec les joueurs en précisant le joueur courant
+ * @param nomJ1 nom du joueur 1
+ * @param nomJ2 nom du joueur 2
+ * @param premierJoueur joueur qui commence la partie : 0 pour le joueur 1, 1 pour le joueur 2
+ * @return partieSauvegardee * partie sauvegardée
+ * */
 partieSauvegardee *creerSauvegarde(char *nomJ1, char *nomJ2, int premierJoueur);
 
-// ajoute nbCoups situés dans coups à la partie
+/**
+ * Ajoute des coups à la sauvegarde
+ * @param partie partie sauvegardée
+ * @param coups tableau des coups à ajouter
+ * @param nbCoups nombre de coups à ajouter
+*/
 void ajouterCoups(partieSauvegardee *partie, int *coups, int nbCoups);
 
-// sauvegarde la partie dans un fichier
+/**
+ * Sauvegarde une partie dans un fichier
+ * @param partie partie à sauvegarder
+*/
 void sauvegarderPartie(partieSauvegardee *partie);
 
-// charge une partie depuis un fichier
+/**
+ * Charge une partie sauvegardée
+ * @param filename nom du fichier de sauvegarde
+ * @return partieSauvegardee * partie sauvegardée
+*/
 partieSauvegardee *chargerPartie(char *filename);
 
+/**
+ * Liste les sauvegardes
+ * @param filtreNom filtre pour les noms des fichiers
+ * @return char * liste des sauvegardes
+*/
 char *listerSauvegardes(char *filtreNom);
 
 #endif /* guard */

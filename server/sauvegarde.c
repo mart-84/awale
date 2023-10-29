@@ -1,3 +1,11 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <time.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <sys/stat.h>
+
 #include "sauvegarde.h"
 
 #define SAVEDIR "saves/"
@@ -31,7 +39,9 @@ void sauvegarderPartie(partieSauvegardee *partie)
 {
     char filename[BUF_SIZE * 2 + 16];
     sprintf(filename, "%s%s_%s_%d.%s", SAVEDIR, partie->nomJoueur1, partie->nomJoueur2, (int)time(NULL), FILE_EXTENSION);
-    FILE *f = fopen(filename, "wb");
+    mkdir(SAVEDIR, 0777);
+    FILE *f = fopen(filename, "w+");
+    printf("Sauvegarde de la partie dans le fichier %d\n", f->_fileno);
     fwrite(&partie->nbCoups, sizeof(int), 1, f);
     fwrite(partie->coups, sizeof(int), partie->nbCoups, f);
 
