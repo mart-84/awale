@@ -8,10 +8,16 @@
 
 - Utiliser les flèches pour remonter dans les commandes
 
+- Revoir un match enregistré : /watchsave nom
+    - tout afficher d'un coup
 
 # Installation
 
-make
+`make`
+
+`./bin/server`
+
+`./bin/client 127.0.0.1 NomJoueur`
 
 # Commandes
 Les commandes commencent par le préfixe /

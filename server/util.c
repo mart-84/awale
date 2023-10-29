@@ -1,5 +1,6 @@
 #include "util.h"
 
+// Problèmes de mémoire possibles dans cette fonction
 int tokeniserChaineDeCaracteres(char *buffer, char delimiter, char ***tokens)
 {
     int taille = strlen(buffer);

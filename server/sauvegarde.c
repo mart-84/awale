@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 
 #include "sauvegarde.h"
+#include "includes.h"
 
 #define SAVEDIR "saves/"
 #define FILE_EXTENSION "awale"
@@ -91,15 +92,16 @@ char *listerSauvegardes(char *filtreNom)
 {
     DIR *d = opendir(SAVEDIR);
     struct dirent *fichier = readdir(d);
-    char *buffer = malloc(sizeof(char) * 1024);
+    char *buffer = malloc(sizeof(char) * BUF_SIZE);
 
     // parcours des fichiers du dossier
     while (fichier != NULL)
     {
         if (strstr(fichier->d_name, FILE_EXTENSION) != NULL && strstr(fichier->d_name, filtreNom) != NULL)
         {
-            strcat(buffer, fichier->d_name);
-            strcat(buffer, ",");
+            strncat(buffer, "- ", BUF_SIZE - strlen(buffer) - 1);
+            strncat(buffer, fichier->d_name, BUF_SIZE - strlen(buffer) - 1);
+            strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
         }
 
         fichier = readdir(d);

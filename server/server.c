@@ -699,6 +699,11 @@ static void app(void)
                      clearListeInvitation(listeInvit, 0);
                      write_client(client->sock, buffer);
                   }
+                  else if (strcmp(commande, "/listesaves") == 0)
+                  {
+                     write_client(client->sock, "Parties sauvegardées :\n");
+                     write_client(client->sock, listerSauvegardes(""));
+                  }
                   else
                   {
                      write_client(client->sock, "Commande inconnue\n");
