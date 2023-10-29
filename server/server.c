@@ -225,7 +225,28 @@ static void app(void)
                   printf("client %s : %s\n", client->name, buffer);
                   if (strcmp(commande, "/help") == 0)
                   {
-                     write_client(client->sock, "Liste des commandes disponibles :\n - /help : affiche ce message d'aide\n - /listejoueurs : affiche les autres joueurs connectes\n - /duel <pseudo> : défier le joueur <pseudo> dans un duel\n");
+                     buffer[0] = 0;
+                     strncat(buffer, "Liste des commandes disponibles :\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /help : affiche ce message d'aide\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /listejoueurs : affiche les autres joueurs connectes\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /duel <pseudo> : défier le joueur <pseudo> dans un duel\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /accepte <pseudo> : accepter une invitation de duel du joueur <pseudo>\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /refuse <pseudo> : refuser une invitation de duel du joueur <pseudo>\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /chat <message> : envoyer un message à tous les joueurs connectés\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /msg <pseudo> <message> : envoyer un message au joueur <pseudo>\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /setbio <bio> : définir votre bio\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /bio : afficher votre bio\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /bio <pseudo> : afficher la bio du joueur <pseudo>\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /abandonne : abandonner le match en cours, quitter le match si l'adversaire est déconnecté\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /listematchs : afficher la liste des matchs en cours\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /spec <pseudo1> <pseudo2> : regarder le match en cours entre <pseudo1> et <pseudo2>\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /listeinvitations : afficher la liste des invitations envoyées et reçues\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /listesaves : afficher la liste des parties enregistrées\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /watchsave <file> : revisionner la partie enregistrée dans le fichier <file>\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /music enable : lancer la musique\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /music disable : arrêter la musique\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - /quit : quitter le jeu\n", BUF_SIZE - strlen(buffer) - 1);
+                     write_client(client->sock, buffer);
                   }
                   else if (strcmp(commande, "/listejoueurs") == 0)
                   {
@@ -256,6 +277,12 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/duel") == 0)
                   {
+                     if (nbParams < 2)
+                     {
+                        write_client(client->sock, "Usage invalide de la commande. Tapez /duel <pseudo>\n");
+                        continue;
+                     }
+
                      char *adversaire = parametres[1];
                      Client *c = rechercherClientParNom(listeClients, adversaire);
                      if (c == NULL)
@@ -326,6 +353,12 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/accepte") == 0)
                   {
+                     if (nbParams < 2)
+                     {
+                        write_client(client->sock, "Usage invalide de la commande. Tapez /accepte <pseudo>\n");
+                        continue;
+                     }
+
                      MatchAwale *match = rechercherMatchClient(listeMatchs, client);
                      if (match != NULL)
                      {
@@ -407,9 +440,10 @@ static void app(void)
                   {
                      if (nbParams < 2)
                      {
-                        write_client(client->sock, "Veuillez entrer un message\n");
+                        write_client(client->sock, "Usage invalide de la commande. Tapez /chat <message>\n");
                         continue;
                      }
+
                      char message[BUF_SIZE];
                      message[0] = 0;
                      for (int i = 1; i < nbParams; i++)
@@ -421,6 +455,12 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/msg") == 0)
                   {
+                     if (nbParams < 3)
+                     {
+                        write_client(client->sock, "Usage invalide de la commande. Tapez /msg <pseudo> <message>\n");
+                        continue;
+                     }
+
                      char *pseudo = parametres[1];
                      // Recherche le joueur avec son pseudo
                      Client *c = rechercherClientParNom(listeClients, pseudo);
@@ -455,6 +495,12 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/refuse") == 0)
                   {
+                     if (nbParams < 2)
+                     {
+                        write_client(client->sock, "Usage invalide de la commande. Tapez /refuse <pseudo>\n");
+                        continue;
+                     }
+
                      char *adversaireNom = parametres[1];
                      Client *adversaire = rechercherClientParNom(listeClients, adversaireNom);
                      if (adversaire == NULL) // client inexistant
@@ -495,12 +541,12 @@ static void app(void)
                   }
                   else if (strcmp(commande, "/setbio") == 0)
                   {
-                     // ajouter tous ce qui suit la commande dans la bio du joueur
                      if (nbParams < 2)
                      {
-                        write_client(client->sock, "Veuillez entrer une bio\n");
+                        write_client(client->sock, "Usage invalide de la commande. Tapez /setbio <bio>\n");
                         continue;
                      }
+
                      char message[BUF_SIZE];
                      message[0] = 0;
                      for (int i = 1; i < nbParams; i++)
@@ -720,7 +766,7 @@ static void app(void)
                   {
                      if (nbParams < 2)
                      {
-                        write_client(client->sock, "Veuillez sélectionner le match à revisionner\n");
+                        write_client(client->sock, "Usage invalide de la commande. Tapez /watchsave <nom>\n");
                         continue;
                      }
 
