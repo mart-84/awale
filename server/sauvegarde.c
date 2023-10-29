@@ -12,9 +12,9 @@
 #define SAVEDIR "saves/"
 #define FILE_EXTENSION "awale"
 
-partieSauvegardee *creerSauvegarde(char *nomJ1, char *nomJ2, int premierJoueur)
+PartieSauvegardee *creerSauvegarde(char *nomJ1, char *nomJ2, int premierJoueur)
 {
-    partieSauvegardee *partie = malloc(sizeof(partieSauvegardee));
+    PartieSauvegardee *partie = malloc(sizeof(PartieSauvegardee));
     strcpy(partie->nomJoueur1, nomJ1);
     strcpy(partie->nomJoueur2, nomJ2);
     partie->nbCoups = 0;
@@ -24,7 +24,7 @@ partieSauvegardee *creerSauvegarde(char *nomJ1, char *nomJ2, int premierJoueur)
     return partie;
 }
 
-void ajouterCoups(partieSauvegardee *partie, int *coups, int nbCoups)
+void ajouterCoups(PartieSauvegardee *partie, int *coups, int nbCoups)
 {
     // agrandissment de la zone mémoire
     partie->coups = (int *)realloc(partie->coups, sizeof(int) * (nbCoups + partie->nbCoups));
@@ -36,7 +36,7 @@ void ajouterCoups(partieSauvegardee *partie, int *coups, int nbCoups)
     partie->nbCoups += nbCoups;
 }
 
-void sauvegarderPartie(partieSauvegardee *partie)
+void sauvegarderPartie(PartieSauvegardee *partie)
 {
     char filename[BUF_SIZE * 2 + 16];
     sprintf(filename, "%s%s_%s_%d.%s", SAVEDIR, partie->nomJoueur1, partie->nomJoueur2, (int)time(NULL), FILE_EXTENSION);
@@ -58,7 +58,7 @@ void sauvegarderPartie(partieSauvegardee *partie)
     fclose(f);
 }
 
-partieSauvegardee *chargerPartie(char *filename)
+PartieSauvegardee *chargerPartie(char *filename)
 {
     char file[strlen(filename) + strlen(SAVEDIR)];
     sprintf(file, "%s%s", SAVEDIR, filename);
@@ -68,7 +68,7 @@ partieSauvegardee *chargerPartie(char *filename)
     if (f == NULL)
         return NULL;
 
-    partieSauvegardee *partie = malloc(sizeof(partieSauvegardee));
+    PartieSauvegardee *partie = malloc(sizeof(PartieSauvegardee));
 
     fread(&(partie->nbCoups), sizeof(int), 1, f);
 

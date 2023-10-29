@@ -372,9 +372,9 @@ static void app(void)
                      }
 
                      // Transformer l'invitation en match
-                     partie *p = malloc(sizeof(partie));
+                     Partie *p = malloc(sizeof(Partie));
                      init(p);
-                     partieSauvegardee *sauvegarde = creerSauvegarde(client->name, adversaire->name, p->joueurCourant);
+                     PartieSauvegardee *sauvegarde = creerSauvegarde(client->name, adversaire->name, p->joueurCourant);
                      match = malloc(sizeof(MatchAwale));
                      match->joueur1 = invit->inviteur;
                      match->joueur2 = invit->invite;
@@ -725,7 +725,7 @@ static void app(void)
                      }
 
                      char *nomMatch = parametres[1];
-                     partieSauvegardee *sauvegarde = chargerPartie(nomMatch);
+                     PartieSauvegardee *sauvegarde = chargerPartie(nomMatch);
 
                      if (sauvegarde == NULL)
                      {
@@ -734,7 +734,7 @@ static void app(void)
                      }
 
                      // Rejouer les coups et envoyer le plateau à chaque fois
-                     partie *p = malloc(sizeof(partie));
+                     Partie *p = malloc(sizeof(Partie));
                      init(p);
                      p->joueurCourant = sauvegarde->premierJoueur;
                      sprintBoard(p, buffer, sauvegarde->nomJoueur1, sauvegarde->nomJoueur2);

@@ -8,9 +8,6 @@
 
 - Utiliser les flèches pour remonter dans les commandes
 
-- Revoir un match enregistré : /watchsave nom
-    - tout afficher d'un coup
-
 # Installation
 
 `make`

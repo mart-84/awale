@@ -7,7 +7,7 @@
 
 #define FIN_PARTIE -102
 
-void init(partie *p)
+void init(Partie *p)
 {
     srand(time(NULL) + 2);
     p->joueurCourant = rand() % 2;
@@ -20,7 +20,7 @@ void init(partie *p)
     }
 }
 
-void printBoard(partie *p)
+void printBoard(Partie *p)
 {
     printf("\n\n+----+-----------------------+----+\n");
     if (p->joueurCourant == 0)
@@ -49,7 +49,7 @@ void printBoard(partie *p)
     printf("A J%d de jouer...\n", p->joueurCourant + 1);
 }
 
-char *sprintBoard(partie *p, char *buffer, char *joueur1, char *joueur2)
+char *sprintBoard(Partie *p, char *buffer, char *joueur1, char *joueur2)
 {
     char line[100];
     strcpy(buffer, "\n\n+----+-----------------------+----+\n");
@@ -86,7 +86,7 @@ char *sprintBoard(partie *p, char *buffer, char *joueur1, char *joueur2)
     return buffer;
 }
 
-int interpreterCoup(partie *p, char choix)
+int interpreterCoup(Partie *p, char choix)
 {
     int coup;
 
@@ -140,7 +140,7 @@ int calculerGrainesJoueur(int *plateau, int joueur)
     return somme;
 }
 
-int calculerScore(partie *p, int caseArrivee, int *plateau)
+int calculerScore(Partie *p, int caseArrivee, int *plateau)
 {
     int score = 0;
     int limite = p->joueurCourant == 0 ? 6 : 0;
@@ -181,7 +181,7 @@ int calculerScore(partie *p, int caseArrivee, int *plateau)
     return score;
 }
 
-int jouer(partie *p, int coup)
+int jouer(Partie *p, int coup)
 {
     int nombreGraines = p->plateau[coup];
     if (nombreGraines == 0)
@@ -231,7 +231,7 @@ int jouer(partie *p, int coup)
 }
 
 // fonction pour lire au clavier le coup et le jouer
-void jouerCoupClavier(partie *p)
+void jouerCoupClavier(Partie *p)
 {
     char choix;
     int coup, status;
@@ -276,7 +276,7 @@ void jouerCoupClavier(partie *p)
     } while (status == EXIT_FAILURE);
 }
 
-int finDePartie(partie *p)
+int finDePartie(Partie *p)
 {
     if (p->scores[0] >= NB_GRAINES_VICTOIRE)
     {
