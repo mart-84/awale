@@ -25,7 +25,7 @@ int tokeniserChaineDeCaracteres(char *buffer, char delimiter, char ***tokens)
 
             debut = -1;
         }
-        else if (debut == -1)
+        else if (debut == -1 && buffer[i] != delimiter)
         { // debut du token
             token = malloc(sizeof(char) * taille);
             token[0] = buffer[i];
