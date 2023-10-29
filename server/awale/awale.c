@@ -271,7 +271,7 @@ void jouerCoupClavier(partie *p)
             scanf(" %c", &choix);
             fflush(stdin);
             coup = interpreterCoup(p, choix);
-        } while (coup == -1);
+        } while (coup == EXIT_FAILURE);
         status = jouer(p, coup);
     } while (status == EXIT_FAILURE);
 }

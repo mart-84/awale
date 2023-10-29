@@ -6,12 +6,6 @@
 
 - Refactoriser le code (adieu la fonction de 150000 lignes o/)
 
-- Ajouter de la musique chez les clients, avec une commande pour la lancer et une commande pour l'arrêter -> dans un autre thread
-
-- Observateur : pouvoir spec une game, il faut d'abord pouvoir afficher la liste des parties et en choisir
-    - /listeparties
-    - /spec j1 j2
-
 - Utiliser les flèches pour remonter dans les commandes
 
 

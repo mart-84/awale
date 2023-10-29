@@ -10,6 +10,7 @@
 #include "listes/listeInvitation.h"
 #include "match.h"
 #include "awale/awale.h"
+#include "sauvegarde.h"
 
 static void init_server(void)
 {
@@ -206,7 +207,7 @@ static void app(void)
                   closesocket(client->sock);
                   remove_client(listeClients, *client);
                   actual--;
-                  printf("Client %s disconnected\n", client->name);
+                  printf("Client %s déconnecté\n", client->name);
                }
                else if (buffer[0] == '/')
                {
@@ -373,10 +374,13 @@ static void app(void)
                      // Transformer l'invitation en match
                      partie *p = malloc(sizeof(partie));
                      init(p);
+                     partieSauvegardee *sauvegarde = creerSauvegarde(client->name, adversaire->name, p->joueurCourant);
                      match = malloc(sizeof(MatchAwale));
                      match->joueur1 = invit->inviteur;
                      match->joueur2 = invit->invite;
                      match->partie = p;
+                     match->spectateurs = NULL;
+                     match->sauvegarde = sauvegarde;
                      listeMatchs = ajouterMatch(listeMatchs, match);
                      listeInvitations = supprimerInvitation(listeInvitations, invit);
 
@@ -723,20 +727,23 @@ static void app(void)
 
                   // Jouer le coup
                   int coup = interpreterCoup(match->partie, buffer[0]);
-                  if (coup == -1)
+                  if (coup == EXIT_FAILURE)
                   {
                      write_client(client->sock, "Coup invalide\n");
                      continue;
                   }
 
                   int resultat = jouer(match->partie, coup);
-                  if (resultat == -1)
+                  if (resultat == EXIT_FAILURE)
                   {
                      write_client(client->sock, "Coup injouable\n");
                      continue;
                   }
                   else
                   {
+                     // Enregistrer le coup dans l'historique
+                     ajouterCoups(match->sauvegarde, &coup, 1);
+
                      buffer[0] = 0;
                      sprintBoard(match->partie, buffer, match->joueur1->name, match->joueur2->name);
                      write_client(match->joueur1->sock, buffer);
@@ -752,6 +759,9 @@ static void app(void)
 
                      if (finDePartie(match->partie) != PAS_DE_GAGNANT)
                      {
+                        // Enregistrer la partie dans un fichier
+                        sauvegarderPartie(match->sauvegarde);
+
                         // Envoyer le score aux deux joueurs
                         buffer[0] = 0;
                         strncat(buffer, "Fin de partie !\n", BUF_SIZE - strlen(buffer) - 1);

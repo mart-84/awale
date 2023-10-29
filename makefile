@@ -27,6 +27,7 @@ $(SERVER): $(SERVER_SRCS:%.c=$(OBJDIR)/%.o)
 $(BINDIR)/%:
 	@mkdir -p $(@D)
 	$(GCC) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@echo Linking complete
 
 $(OBJDIR)/%.o: %.c $(DEPDIR)/%.d $(DEPDIR)
 	@mkdir -p $(@D)
@@ -40,7 +41,7 @@ DEPFILES := $(SRCS:%.c=$(DEPDIR)/%.d)
 $(DEPFILES):
 include $(wildcard $(DEPFILES))
 
-.PHONY: clean start
+.PHONY: clean start all
 
 start:
 	gnome-terminal -- ${SERVER} && gnome-terminal --tab -- ${CLIENT} 127.0.0.1 a && gnome-terminal --tab -- ${CLIENT} 127.0.0.1 b && gnome-terminal --tab -- ${CLIENT} 127.0.0.1 c
