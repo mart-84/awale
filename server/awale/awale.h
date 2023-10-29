@@ -14,7 +14,7 @@
 typedef int plateau[NB_CASES];
 typedef int scores[2];
 
-typedef struct
+typedef struct partie
 {
     plateau plateau;
     scores scores;

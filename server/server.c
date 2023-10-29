@@ -702,7 +702,71 @@ static void app(void)
                   else if (strcmp(commande, "/listesaves") == 0)
                   {
                      write_client(client->sock, "Parties sauvegardées :\n");
-                     write_client(client->sock, listerSauvegardes(""));
+                     char *liste = listerSauvegardes("");
+                     if (liste == NULL || strlen(liste) == 0)
+                     {
+                        write_client(client->sock, "Aucune partie sauvegardée\n");
+                     }
+                     else
+                     {
+                        write_client(client->sock, liste);
+                     }
+                     if (liste != NULL)
+                     {
+                        free(liste);
+                     }
+                  }
+                  else if (strcmp(commande, "/watchsave") == 0)
+                  {
+                     if (nbParams < 2)
+                     {
+                        write_client(client->sock, "Veuillez sélectionner le match à revisionner\n");
+                        continue;
+                     }
+
+                     char *nomMatch = parametres[1];
+                     partieSauvegardee *sauvegarde = chargerPartie(nomMatch);
+
+                     if (sauvegarde == NULL)
+                     {
+                        write_client(client->sock, "Ce match n'existe pas\n");
+                        continue;
+                     }
+
+                     // Rejouer les coups et envoyer le plateau à chaque fois
+                     partie *p = malloc(sizeof(partie));
+                     init(p);
+                     p->joueurCourant = sauvegarde->premierJoueur;
+                     sprintBoard(p, buffer, sauvegarde->nomJoueur1, sauvegarde->nomJoueur2);
+                     for (int i = 0; i < sauvegarde->nbCoups; i++)
+                     {
+                        jouer(p, sauvegarde->coups[i]);
+                        buffer[0] = 0;
+                        sprintBoard(p, buffer, sauvegarde->nomJoueur1, sauvegarde->nomJoueur2);
+                        write_client(client->sock, buffer);
+                     }
+
+                     // Envoyer le score
+                     buffer[0] = 0;
+                     strncat(buffer, "Fin de partie !\n", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, "Score : ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, sauvegarde->nomJoueur1, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " : ", BUF_SIZE - strlen(buffer) - 1);
+                     char score[10];
+                     sprintf(score, "%d", p->scores[0]);
+                     strncat(buffer, score, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " - ", BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, sauvegarde->nomJoueur2, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, " : ", BUF_SIZE - strlen(buffer) - 1);
+                     sprintf(score, "%d", p->scores[1]);
+                     strncat(buffer, score, BUF_SIZE - strlen(buffer) - 1);
+                     strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
+                     write_client(client->sock, buffer);
+
+                     // Supprimer la partie
+                     free(p);
+                     free(sauvegarde->coups);
+                     free(sauvegarde);
                   }
                   else
                   {
@@ -732,7 +796,7 @@ static void app(void)
 
                   // Jouer le coup
                   int coup = interpreterCoup(match->partie, buffer[0]);
-                  if (coup == EXIT_FAILURE)
+                  if (coup == -1)
                   {
                      write_client(client->sock, "Coup invalide\n");
                      continue;

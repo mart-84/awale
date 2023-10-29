@@ -91,8 +91,11 @@ partieSauvegardee *chargerPartie(char *filename)
 char *listerSauvegardes(char *filtreNom)
 {
     DIR *d = opendir(SAVEDIR);
+    if (d == NULL)
+        return NULL;
     struct dirent *fichier = readdir(d);
-    char *buffer = malloc(sizeof(char) * BUF_SIZE);
+
+    char *buffer = calloc(sizeof(char), BUF_SIZE);
 
     // parcours des fichiers du dossier
     while (fichier != NULL)
